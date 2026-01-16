@@ -7,6 +7,9 @@ import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
+from rich.table import Table
+from rich.columns import Columns
+from rich.align import Align
 
 from generator.prompts import get_user_choices
 from generator.renderer import ProjectRenderer
@@ -25,11 +28,38 @@ def init():
     """
     Initialize a new MLOps project with interactive prompts
     """
-    console.print(Panel(
-        Text("🧠 MLOps Project Generator", style="bold blue"),
-        subtitle="Production-ready ML project templates",
-        border_style="blue"
-    ))
+    # Create impressive banner with better layout
+    title = Text("🧠 MLOps Project Generator", style="bold cyan")
+    title.stylize("bold magenta", 0, 2)  # 🧠 in magenta
+    title.stylize("bold cyan", 3, 28)   # MLOps Project Generator in cyan
+    
+    # Create feature highlights with better formatting
+    features_text = Text()
+    features_text.append("🔧 Frameworks: ", style="bold cyan")
+    features_text.append("Scikit-learn • PyTorch • TensorFlow\n", style="white")
+    features_text.append("📊 Task Types: ", style="bold cyan")
+    features_text.append("Classification • Regression • Time-Series\n", style="white")
+    features_text.append("🔬 Tracking: ", style="bold cyan")
+    features_text.append("MLflow • W&B • Custom\n", style="white")
+    features_text.append("🚀 Deployment: ", style="bold cyan")
+    features_text.append("FastAPI • Docker • Kubernetes", style="white")
+    
+    # Create author credit
+    author_text = Text("Created by H A R S H H A A", style="italic dim cyan")
+    
+    # Main banner panel with better content
+    main_panel = Panel(
+        features_text,
+        title=title,
+        subtitle=author_text,
+        border_style="cyan",
+        padding=(1, 3),
+        title_align="center",
+        subtitle_align="center"
+    )
+    
+    console.print(main_panel)
+    console.print()  # Add spacing
     
     try:
         # Get user choices through interactive prompts
@@ -42,11 +72,30 @@ def init():
         renderer = ProjectRenderer(choices)
         renderer.generate_project()
         
-        console.print(Panel(
-            Text("✅ Project generated successfully!", style="bold green"),
-            subtitle=f"Framework: {choices['framework']} | Task: {choices['task_type']}",
-            border_style="green"
-        ))
+        # Success message with great UI
+        success_title = Text("🎉 Project Generated Successfully!", style="bold green")
+        success_title.stylize("bold yellow", 0, 2)  # 🎉 in yellow
+        
+        # Create project summary
+        summary_table = Table(show_header=False, box=None, padding=0)
+        summary_table.add_column(justify="left", style="cyan", width=15)
+        summary_table.add_column(justify="left", style="white", width=25)
+        
+        summary_table.add_row("📁 Project", choices['project_name'])
+        summary_table.add_row("🔧 Framework", choices['framework'].title())
+        summary_table.add_row("📊 Task Type", choices['task_type'].title())
+        summary_table.add_row("🔬 Tracking", choices['experiment_tracking'].title())
+        summary_table.add_row("🚀 Deploy", choices['deployment'].title())
+        
+        success_panel = Panel(
+            Align.center(summary_table),
+            title=success_title,
+            subtitle=f"Created by H A R S H H A A • Ready to build! 🚀",
+            border_style="green",
+            padding=(1, 2)
+        )
+        
+        console.print(success_panel)
         
     except Exception as e:
         console.print(Panel(
