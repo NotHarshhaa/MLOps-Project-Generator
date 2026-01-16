@@ -1,5 +1,7 @@
 # 🧠 MLOps Project Generator
 
+![Banner](/images/banner.png)
+
 A CLI tool that generates production-ready MLOps project templates for Scikit-learn, PyTorch, and TensorFlow.
 
 ## 🚀 Features
@@ -27,6 +29,24 @@ pip install -e .
 ```bash
 pip install mlops-project-generator
 ```
+
+## 🖼️ Screenshots
+
+### CLI Commands
+
+![Version and Help Commands](/images/cli-commands.png)
+
+### Scikit-learn Project Generation
+
+![Scikit-learn Generation](/images/sklearn-generation.png)
+
+### PyTorch Project Generation
+
+![PyTorch Generation](/images/pytorch-generation.png)
+
+### TensorFlow Project Generation
+
+![TensorFlow Generation](/images/tensorflow-generation.png)
 
 ## 🎯 Quick Start
 
