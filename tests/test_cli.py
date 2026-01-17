@@ -24,10 +24,10 @@ class TestCLI:
         assert result.exit_code == 0
         assert "mlops-project-generator v1.0.0" in result.stdout
     
-    @patch('generator.utils.get_next_steps')
-    @patch('generator.prompts.get_user_choices')
-    @patch('generator.renderer.ProjectRenderer')
-    @patch('generator.validators.validate_choices')
+    @patch('generator.cli.get_next_steps')
+    @patch('generator.cli.get_user_choices')
+    @patch('generator.cli.ProjectRenderer')
+    @patch('generator.cli.validate_choices')
     def test_init_command_success(self, mock_validate, mock_renderer, mock_choices, mock_next_steps):
         """Test successful init command"""
         # Mock user choices
