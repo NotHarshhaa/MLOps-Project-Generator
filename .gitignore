@@ -27,6 +27,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Package build directories
+mlops_project_generator-*/
+
 # PyInstaller
 *.manifest
 *.spec

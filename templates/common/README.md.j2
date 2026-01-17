@@ -1,0 +1,87 @@
+# {{ project_name }}
+
+{{ description }}
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+### Usage
+
+```bash
+# Train the model
+python src/train.py
+
+# Run inference
+python src/inference.py
+```
+
+## 📊 Project Structure
+
+```
+{{ project_name }}/
+├── src/
+│   ├── data/
+│   ├── features/
+│   ├── models/
+│   ├── train.py
+│   └── inference.py
+├── configs/
+│   └── config.yaml
+├── tests/
+├── requirements.txt
+└── README.md
+```
+
+## 🛠️ Development
+
+### Setup
+
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Running Tests
+
+```bash
+pytest tests/
+```
+
+## 📈 Framework: {{ framework|title }}
+
+{% if experiment_tracking %}
+## 🔬 Experiment Tracking: {{ experiment_tracking|title }}
+{% endif %}
+
+{% if orchestration %}
+## 🔄 Orchestration: {{ orchestration|title }}
+{% endif %}
+
+{% if deployment %}
+## 🚀 Deployment: {{ deployment|title }}
+{% endif %}
+
+{% if monitoring %}
+## 📊 Monitoring: {{ monitoring|title }}
+{% endif %}
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 👥 Author
+
+**{{ author_name }}**
+
+---
+
+Generated with [MLOps Project Generator](https://github.com/NotHarshhaa/MLOps-Project-Generator)

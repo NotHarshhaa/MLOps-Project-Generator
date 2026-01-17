@@ -6,7 +6,7 @@ import os
 import shutil
 from pathlib import Path
 from typing import Dict, Any, List
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 
@@ -24,7 +24,9 @@ class ProjectRenderer:
         self.choices = choices
         self.project_name = choices["project_name"]
         self.framework = choices["framework"]
-        self.template_dir = Path("templates")
+        # Get the template directory relative to the package location
+        package_dir = Path(__file__).parent.parent
+        self.template_dir = package_dir / "templates"
         self.output_dir = Path.cwd() / self.project_name
         
     def generate_project(self) -> None:

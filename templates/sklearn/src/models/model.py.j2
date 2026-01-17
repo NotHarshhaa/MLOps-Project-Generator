@@ -1,0 +1,149 @@
+"""
+Model implementation for {{ project_name }}
+"""
+
+{% if task_type == 'classification' %}
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+{% elif task_type == 'regression' %}
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+{% elif task_type == 'time-series' %}
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from statsmodels.tsa.arima.model import ARIMA
+{% endif %}
+
+import numpy as np
+import pandas as pd
+from typing import Any, Dict, Optional
+
+class Model:
+    """
+    {{ task_type|title }} model for {{ project_name }}
+    """
+    
+    def __init__(self, model_type: str = "{{ 'random_forest' if task_type in ['classification', 'regression'] else 'arima' }}"):
+        self.model_type = model_type
+        self.model = None
+        self.is_trained = False
+        
+    def create_model(self) -> Any:
+        """Create the model based on task type and model type"""
+        {% if task_type == 'classification' %}
+        if self.model_type == "random_forest":
+            self.model = RandomForestClassifier(
+                n_estimators=100,
+                random_state=42
+            )
+        elif self.model_type == "logistic_regression":
+            self.model = LogisticRegression(random_state=42)
+        elif self.model_type == "svm":
+            self.model = SVC(random_state=42)
+        {% elif task_type == 'regression' %}
+        if self.model_type == "random_forest":
+            self.model = RandomForestRegressor(
+                n_estimators=100,
+                random_state=42
+            )
+        elif self.model_type == "linear_regression":
+            self.model = LinearRegression()
+        elif self.model_type == "svr":
+            self.model = SVR()
+        {% elif task_type == 'time-series' %}
+        if self.model_type == "arima":
+            self.model = ARIMA(order=(1, 1, 1))
+        elif self.model_type == "random_forest":
+            self.model = RandomForestRegressor(
+                n_estimators=100,
+                random_state=42
+            )
+        {% endif %}
+        else:
+            raise ValueError(f"Unknown model type: {self.model_type}")
+            
+        return self.model
+    
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
+        """Train the model"""
+        if self.model is None:
+            self.create_model()
+            
+        {% if task_type == 'time-series' %}
+        if self.model_type == "arima":
+            self.model = self.model.fit(y)
+        else:
+            self.model.fit(X, y)
+        {% else %}
+        self.model.fit(X, y)
+        {% endif %}
+        
+        self.is_trained = True
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Make predictions"""
+        if not self.is_trained:
+            raise ValueError("Model must be trained before making predictions")
+            
+        {% if task_type == 'time-series' %}
+        if self.model_type == "arima":
+            return self.model.forecast(steps=len(X))
+        else:
+            return self.model.predict(X)
+        {% else %}
+        return self.model.predict(X)
+        {% endif %}
+    
+    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+        """Predict probabilities (for classification)"""
+        {% if task_type == 'classification' %}
+        if not self.is_trained:
+            raise ValueError("Model must be trained before making predictions")
+            
+        if hasattr(self.model, 'predict_proba'):
+            return self.model.predict_proba(X)
+        else:
+            # For models that don't support predict_proba
+            predictions = self.predict(X)
+            # Convert to binary probability format
+            probabilities = np.zeros((len(predictions), 2))
+            probabilities[np.arange(len(predictions)), predictions] = 1.0
+            return probabilities
+        {% else %}
+        raise NotImplementedError("predict_proba only available for classification models")
+        {% endif %}
+    
+    def get_feature_importance(self) -> Optional[np.ndarray]:
+        """Get feature importance if available"""
+        if not self.is_trained:
+            raise ValueError("Model must be trained first")
+            
+        if hasattr(self.model, 'feature_importances_'):
+            return self.model.feature_importances_
+        elif hasattr(self.model, 'coef_'):
+            return np.abs(self.model.coef_)
+        else:
+            return None
+    
+    def save_model(self, filepath: str) -> None:
+        """Save the model"""
+        import joblib
+        joblib.dump(self.model, filepath)
+    
+    def load_model(self, filepath: str) -> None:
+        """Load a saved model"""
+        import joblib
+        self.model = joblib.load(filepath)
+        self.is_trained = True
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """Get model information"""
+        return {
+            "model_type": self.model_type,
+            "task_type": "{{ task_type }}",
+            "framework": "{{ framework }}",
+            "is_trained": self.is_trained,
+            "model_class": type(self.model).__name__ if self.model else None
+        }

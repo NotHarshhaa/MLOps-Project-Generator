@@ -37,7 +37,8 @@ class TestCLI:
             "deployment": "fastapi",
             "monitoring": "evidently",
             "project_name": "test-project",
-            "author_name": "Test Author"
+            "author_name": "Test Author",
+            "description": "Test project description"
         }
         
         # Mock renderer

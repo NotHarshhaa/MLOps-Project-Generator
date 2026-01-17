@@ -1,0 +1,80 @@
+# Core dependencies
+{% if framework == 'sklearn' %}
+scikit-learn>=1.3.0
+pandas>=2.0.0
+numpy>=1.24.0
+{% elif framework == 'pytorch' %}
+torch>=2.0.0
+torchvision>=0.15.0
+pandas>=2.0.0
+numpy>=1.24.0
+{% elif framework == 'tensorflow' %}
+tensorflow>=2.13.0
+pandas>=2.0.0
+numpy>=1.24.0
+{% endif %}
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+{% if task_type == 'classification' %}
+# Classification specific
+scikit-learn>=1.3.0
+{% elif task_type == 'regression' %}
+# Regression specific
+scikit-learn>=1.3.0
+{% elif task_type == 'nlp' %}
+# NLP specific
+transformers>=4.30.0
+tokenizers>=0.13.0
+{% elif task_type == 'computer-vision' %}
+# Computer Vision specific
+pillow>=10.0.0
+{% elif task_type == 'time-series' %}
+# Time Series specific
+statsmodels>=0.14.0
+{% endif %}
+
+{% if experiment_tracking == 'mlflow' %}
+# MLflow
+mlflow>=2.5.0
+{% elif experiment_tracking == 'wandb' %}
+# Weights & Biases
+wandb>=0.15.0
+{% endif %}
+
+{% if orchestration == 'airflow' %}
+# Airflow
+apache-airflow>=2.6.0
+{% elif orchestration == 'kubeflow' %}
+# Kubeflow
+kfp>=2.0.0
+{% endif %}
+
+{% if deployment == 'fastapi' %}
+# FastAPI
+fastapi>=0.100.0
+uvicorn>=0.23.0
+{% elif framework == 'docker' %}
+# Docker dependencies (already handled by Dockerfile)
+{% endif %}
+
+{% if monitoring == 'evidently' %}
+# Evidently AI
+evidently>=0.4.0
+{% endif %}
+
+# Development dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+isort>=5.12.0
+flake8>=6.0.0
+mypy>=1.4.0
+
+# Jupyter notebooks
+jupyter>=1.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
