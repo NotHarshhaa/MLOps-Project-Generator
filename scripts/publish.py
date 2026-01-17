@@ -70,42 +70,15 @@ def main():
     check_package()
     
     # Ask where to publish
-    print("\nWhere do you want to publish?")
-    print("1. Test PyPI (recommended first)")
-    print("2. Production PyPI")
-    print("3. Both (Test first, then Production)")
+    print("\n🎯 Publishing to PyPI")
+    confirm = input("⚠️  Are you sure you want to publish to production PyPI? (y/N): ").strip().lower()
     
-    choice = input("\nEnter your choice (1-3): ").strip()
-    
-    if choice == "1":
-        publish_to_test_pypi()
-        print("\n🎉 Successfully published to Test PyPI!")
-        print("Install with: pip install --index-url https://test.pypi.org/simple/ mlops-project-generator")
-        
-    elif choice == "2":
-        confirm = input("⚠️  Are you sure you want to publish to production PyPI? (y/N): ").strip().lower()
-        if confirm == 'y':
-            publish_to_pypi()
-            print("\n🎉 Successfully published to PyPI!")
-            print("Install with: pip install mlops-project-generator")
-        else:
-            print("❌ Publication cancelled")
-            
-    elif choice == "3":
-        print("Publishing to Test PyPI first...")
-        publish_to_test_pypi()
-        
-        confirm = input("\n✅ Test PyPI successful. Continue to production PyPI? (y/N): ").strip().lower()
-        if confirm == 'y':
-            publish_to_pypi()
-            print("\n🎉 Successfully published to both Test PyPI and PyPI!")
-            print("Install with: pip install mlops-project-generator")
-        else:
-            print("❌ Production publication cancelled")
-            print("🎉 Still published to Test PyPI!")
-            print("Install with: pip install --index-url https://test.pypi.org/simple/ mlops-project-generator")
+    if confirm == 'y':
+        publish_to_pypi()
+        print("\n🎉 Successfully published to PyPI!")
+        print("Install with: pip install mlops-project-generator")
     else:
-        print("❌ Invalid choice")
+        print("❌ Publication cancelled")
         sys.exit(1)
 
 
