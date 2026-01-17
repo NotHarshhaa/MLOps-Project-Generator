@@ -3,11 +3,11 @@ Utility functions for the MLOps Project Generator
 """
 
 import os
-import sys
+import platform
 import subprocess
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
-import platform
 
 
 def check_system_requirements() -> Dict[str, bool]:
@@ -25,12 +25,15 @@ def check_system_requirements() -> Dict[str, bool]:
 def check_command_available(command: str) -> bool:
     """Check if a command is available in the system"""
     try:
-        subprocess.run([command, "--version"], 
-                      capture_output=True, 
-                      check=True,
-                      timeout=5)
+        subprocess.run(
+            [command, "--version"], capture_output=True, check=True, timeout=5
+        )
         return True
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+    ):
         return False
 
 
@@ -48,37 +51,44 @@ def suggest_project_name(framework: str, task_type: str) -> str:
     """Suggest a project name based on framework and task type"""
     suggestions = {
         "sklearn": {
-            "classification": ["ml-classifier", "predictive-model", "classification-ml"],
+            "classification": [
+                "ml-classifier",
+                "predictive-model",
+                "classification-ml",
+            ],
             "regression": ["ml-regressor", "prediction-model", "regression-ml"],
-            "timeseries": ["time-series-ml", "forecasting-model", "temporal-predictor"]
+            "timeseries": ["time-series-ml", "forecasting-model", "temporal-predictor"],
         },
         "pytorch": {
             "classification": ["deep-classifier", "neural-net", "torch-classifier"],
             "regression": ["deep-regressor", "neural-predictor", "torch-regressor"],
-            "timeseries": ["lstm-forecast", "sequence-model", "torch-timeseries"]
+            "timeseries": ["lstm-forecast", "sequence-model", "torch-timeseries"],
         },
         "tensorflow": {
             "classification": ["tf-classifier", "keras-model", "tensorflow-ml"],
             "regression": ["tf-regressor", "keras-predictor", "tensorflow-regression"],
-            "timeseries": ["tf-forecast", "keras-lstm", "tensorflow-timeseries"]
-        }
+            "timeseries": ["tf-forecast", "keras-lstm", "tensorflow-timeseries"],
+        },
     }
-    
+
     import random
+
     return random.choice(suggestions.get(framework, {}).get(task_type, ["ml-project"]))
 
 
-def validate_project_directory(project_name: str, base_path: Optional[Path] = None) -> bool:
+def validate_project_directory(
+    project_name: str, base_path: Optional[Path] = None
+) -> bool:
     """Validate if project directory can be created"""
     if base_path is None:
         base_path = Path.cwd()
-    
+
     project_path = base_path / project_name
-    
+
     # Check if directory already exists
     if project_path.exists():
         return False
-    
+
     # Check if parent directory is writable
     try:
         base_path.mkdir(parents=True, exist_ok=True)
@@ -92,9 +102,9 @@ def get_project_size_estimate(framework: str, features: List[str]) -> Dict[str, 
     base_sizes = {
         "sklearn": {"files": 15, "lines": 2000, "size_mb": 2},
         "pytorch": {"files": 20, "lines": 3500, "size_mb": 4},
-        "tensorflow": {"files": 22, "lines": 4000, "size_mb": 5}
+        "tensorflow": {"files": 22, "lines": 4000, "size_mb": 5},
     }
-    
+
     feature_multipliers = {
         "mlflow": 1.2,
         "wandb": 1.1,
@@ -103,20 +113,20 @@ def get_project_size_estimate(framework: str, features: List[str]) -> Dict[str, 
         "docker": 1.2,
         "kubernetes": 1.5,
         "evidently": 1.1,
-        "custom": 1.0
+        "custom": 1.0,
     }
-    
+
     base = base_sizes.get(framework, base_sizes["sklearn"])
-    
+
     # Apply feature multipliers
     total_multiplier = 1.0
     for feature in features:
         total_multiplier *= feature_multipliers.get(feature, 1.0)
-    
+
     return {
         "files": int(base["files"] * total_multiplier),
         "lines": int(base["lines"] * total_multiplier),
-        "size_mb": round(base["size_mb"] * total_multiplier, 1)
+        "size_mb": round(base["size_mb"] * total_multiplier, 1),
     }
 
 
@@ -301,9 +311,9 @@ saved_models/
 *.pkl
 *.joblib
 *.model
-"""
+""",
     }
-    
+
     # Feature-specific additions
     feature_specific = {
         "mlflow": """
@@ -325,20 +335,20 @@ plugins/__pycache__/
 # Kubeflow
 .pipeline/
 .metadata/
-"""
+""",
     }
-    
+
     content = base_content
-    
+
     # Add framework-specific content
     if framework in framework_specific:
         content += framework_specific[framework]
-    
+
     # Add feature-specific content
     for feature in features:
         if feature in feature_specific:
             content += feature_specific[feature]
-    
+
     return content
 
 
@@ -351,7 +361,7 @@ def get_next_steps(framework: str, task_type: str, deployment: str) -> List[str]
         "Add your data to data/raw/",
         "Configure configs/config.yaml",
     ]
-    
+
     framework_steps = {
         "sklearn": [
             "Prepare your dataset in CSV format",
@@ -367,9 +377,9 @@ def get_next_steps(framework: str, task_type: str, deployment: str) -> List[str]
             "Check TensorFlow installation: python -c 'import tensorflow as tf; print(tf.__version__)'",
             "Prepare dataset for Keras models",
             "Configure model architecture in src/models/",
-        ]
+        ],
     }
-    
+
     deployment_steps = {
         "fastapi": [
             "Start API server: python src/inference.py",
@@ -382,9 +392,13 @@ def get_next_steps(framework: str, task_type: str, deployment: str) -> List[str]
         "kubernetes": [
             "Review k8s/ deployment files",
             "Apply to cluster: kubectl apply -f k8s/",
-        ]
+        ],
     }
-    
-    next_steps = base_steps + framework_steps.get(framework, []) + deployment_steps.get(deployment, [])
-    
+
+    next_steps = (
+        base_steps
+        + framework_steps.get(framework, [])
+        + deployment_steps.get(deployment, [])
+    )
+
     return next_steps[:8]  # Return top 8 steps
