@@ -5,10 +5,12 @@ Template renderer for generating MLOps projects
 import os
 import shutil
 from pathlib import Path
-from typing import Dict, Any
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from typing import Dict, Any, List
+from jinja2 import Environment, FileSystemLoader
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
+
+from generator.utils import create_gitignore_content
 
 console = Console()
 
@@ -71,6 +73,15 @@ class ProjectRenderer:
         common_dir = self.template_dir / "common"
         if common_dir.exists():
             self._copy_directory(common_dir, self.output_dir)
+        
+        # Generate enhanced .gitignore
+        gitignore_path = self.output_dir / ".gitignore"
+        features = [self.choices["experiment_tracking"], self.choices["orchestration"], 
+                   self.choices["deployment"], self.choices["monitoring"]]
+        gitignore_content = create_gitignore_content(self.framework, features)
+        
+        with open(gitignore_path, 'w', encoding='utf-8') as f:
+            f.write(gitignore_content)
     
     def _copy_framework_files(self) -> None:
         """Copy framework-specific files"""

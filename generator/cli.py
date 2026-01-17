@@ -14,6 +14,7 @@ from rich.align import Align
 from generator.prompts import get_user_choices
 from generator.renderer import ProjectRenderer
 from generator.validators import validate_choices
+from generator.utils import get_next_steps
 
 app = typer.Typer(
     name="mlops-project-generator",
@@ -96,6 +97,23 @@ def init():
         )
         
         console.print(success_panel)
+        
+        # Show next steps
+        next_steps = get_next_steps(choices['framework'], choices['task_type'], choices['deployment'])
+        
+        steps_text = Text()
+        for i, step in enumerate(next_steps, 1):
+            steps_text.append(f"{i}. {step}\n", style="cyan")
+        
+        next_steps_panel = Panel(
+            steps_text,
+            title="🎯 Next Steps",
+            border_style="blue",
+            padding=(1, 2)
+        )
+        
+        console.print(next_steps_panel)
+        console.print(Text(f"\n✨ Happy coding with {choices['project_name']}! ✨", style="bold green"))
         
     except Exception as e:
         console.print(Panel(
