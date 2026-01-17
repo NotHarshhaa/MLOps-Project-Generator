@@ -2,20 +2,13 @@
 Template renderer for generating MLOps projects
 """
 
-import os
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from rich.console import Console
-from rich.progress import (
-    BarColumn,
-    Progress,
-    SpinnerColumn,
-    TaskProgressColumn,
-    TextColumn,
-)
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from generator.utils import create_gitignore_content
 
@@ -179,14 +172,16 @@ class ProjectRenderer:
 
         # Tool-specific directories
         if self.choices["experiment_tracking"] != "none":
-            directories.append(
+            tracking_dir = (
                 "mlruns" if self.choices["experiment_tracking"] == "mlflow" else "wandb"
             )
+            directories.append(tracking_dir)
 
         if self.choices["orchestration"] != "none":
-            directories.append(
+            orchestration_dir = (
                 "dags" if self.choices["orchestration"] == "airflow" else "pipelines"
             )
+            directories.append(orchestration_dir)
 
         # Create directories
         for directory in directories:
@@ -197,11 +192,10 @@ class ProjectRenderer:
         context = self.choices.copy()
 
         # Add computed values
+        project_slug = self.project_name.lower().replace(" ", "-").replace("_", "-")
         context.update(
             {
-                "project_slug": self.project_name.lower()
-                .replace(" ", "-")
-                .replace("_", "-"),
+                "project_slug": project_slug,
                 "python_version": "3.10",
                 "year": "2026",
                 "framework_display": self.framework.title(),

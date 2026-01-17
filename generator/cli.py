@@ -5,7 +5,6 @@ CLI interface for MLOps Project Generator
 
 import typer
 from rich.align import Align
-from rich.columns import Columns
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -91,7 +90,7 @@ def init():
         success_panel = Panel(
             Align.center(summary_table),
             title=success_title,
-            subtitle=f"Created by H A R S H H A A • Ready to build! 🚀",
+            subtitle="Created by H A R S H H A A • Ready to build! 🚀",
             border_style="green",
             padding=(1, 2),
         )
@@ -108,7 +107,10 @@ def init():
             steps_text.append(f"{i}. {step}\n", style="cyan")
 
         next_steps_panel = Panel(
-            steps_text, title="🎯 Next Steps", border_style="blue", padding=(1, 2)
+            steps_text,
+            title="🎯 Next Steps",
+            border_style="blue",
+            padding=(1, 2),
         )
 
         console.print(next_steps_panel)
@@ -121,7 +123,10 @@ def init():
 
     except Exception as e:
         console.print(
-            Panel(Text(f"❌ Error: {str(e)}", style="bold red"), border_style="red")
+            Panel(
+                Text(f"❌ Error: {str(e)}", style="bold red"),
+                border_style="red",
+            )
         )
         raise typer.Exit(1)
 
@@ -129,7 +134,7 @@ def init():
 @app.command()
 def version():
     """Show version information"""
-    console.print(f"mlops-project-generator v1.0.0")
+    console.print("mlops-project-generator v1.0.0")
 
 
 if __name__ == "__main__":

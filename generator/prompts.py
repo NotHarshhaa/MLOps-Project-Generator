@@ -2,12 +2,10 @@
 Interactive prompts for user configuration
 """
 
-import time
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.text import Text
@@ -68,14 +66,34 @@ def show_project_summary(choices: Dict[str, Any]) -> bool:
 
     # Display mapping
     display_mapping = {
-        "framework": "ML Framework",
+        "framework": "Framework",
         "task_type": "Task Type",
         "experiment_tracking": "Experiment Tracking",
         "orchestration": "Orchestration",
         "deployment": "Deployment",
         "monitoring": "Monitoring",
         "project_name": "Project Name",
-        "author_name": "Author",
+        "author_name": "Author Name",
+        # Task types
+        "classification": "Basic setup",
+        "regression": "Standard setup",
+        "timeseries": "Advanced setup",
+        # Experiment tracking
+        "mlflow": "Full tracking",
+        "wandb": "Cloud tracking",
+        "tracking_none": "Basic setup",
+        # Orchestration
+        "airflow": "Advanced pipeline",
+        "kubeflow": "Enterprise pipeline",
+        "orchestration_none": "Simple workflow",
+        # Deployment
+        "fastapi": "Quick deploy",
+        "docker": "Container deploy",
+        "kubernetes": "Production deploy",
+        # Monitoring
+        "evidently": "Auto monitoring",
+        "custom": "Manual monitoring",
+        "monitoring_none": "Basic monitoring",
     }
 
     impact_mapping = {
@@ -87,16 +105,16 @@ def show_project_summary(choices: Dict[str, Any]) -> bool:
         "timeseries": "Advanced setup",
         "mlflow": "Full tracking",
         "wandb": "Cloud tracking",
-        "none": "Basic setup",
+        "tracking_none": "Basic setup",
         "airflow": "Advanced pipeline",
         "kubeflow": "Enterprise pipeline",
-        "none": "Simple workflow",
+        "orchestration_none": "Simple workflow",
         "fastapi": "Quick deploy",
         "docker": "Container deploy",
         "kubernetes": "Production deploy",
         "evidently": "Auto monitoring",
         "custom": "Manual monitoring",
-        "none": "Basic monitoring",
+        "monitoring_none": "Basic monitoring",
     }
 
     for key, display_name in display_mapping.items():
