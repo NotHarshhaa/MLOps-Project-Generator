@@ -23,7 +23,7 @@ class TestCLI:
         """Test version command"""
         result = self.runner.invoke(app, ["version"])
         assert result.exit_code == 0
-        assert "mlops-project-generator v1.0.0" in result.stdout
+        assert "mlops-project-generator v1.0.2" in result.stdout
 
     @patch("generator.cli.get_next_steps")
     @patch("generator.cli.get_user_choices")
