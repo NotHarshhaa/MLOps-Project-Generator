@@ -26,30 +26,10 @@ class TestProjectRenderer:
             "monitoring": "evidently",
             "project_name": "test-project",
             "author_name": "Test Author",
+            "description": "Test project description",
             "python_version": "3.10",
             "year": "2026"
         }
-        
-        # Create mock template structure
-        self.templates_dir = Path(self.temp_dir) / "templates"
-        self.templates_dir.mkdir()
-        
-        # Create common templates
-        common_dir = self.templates_dir / "common"
-        common_dir.mkdir()
-        
-        # Create sklearn templates
-        sklearn_dir = self.templates_dir / "sklearn"
-        sklearn_dir.mkdir()
-        (sklearn_dir / "src").mkdir()
-        (sklearn_dir / "src" / "models").mkdir()
-        
-        # Create test template files
-        (common_dir / "README.md.j2").write_text("# {{ project_name }}\nAuthor: {{ author_name }}")
-        (sklearn_dir / "src" / "models" / "model.py.j2").write_text("# {{ framework }} model\n# {{ task_type }}")
-        
-        # Update template directory in renderer
-        self.original_template_dir = Path("templates")
     
     def teardown_method(self):
         """Cleanup test environment"""
@@ -57,18 +37,15 @@ class TestProjectRenderer:
     
     def test_renderer_initialization(self):
         """Test renderer initialization"""
-        with patch('generator.renderer.Path') as mock_path:
-            mock_path.return_value = self.templates_dir
-            renderer = ProjectRenderer(self.choices)
-            
-            assert renderer.choices == self.choices
-            assert renderer.project_name == "test-project"
-            assert renderer.framework == "sklearn"
+        renderer = ProjectRenderer(self.choices)
+        
+        assert renderer.choices == self.choices
+        assert renderer.project_name == "test-project"
+        assert renderer.framework == "sklearn"
+        assert renderer.template_dir.exists()
     
-    @patch('generator.renderer.Path')
-    def test_create_project_directory(self, mock_path):
+    def test_create_project_directory(self):
         """Test project directory creation"""
-        mock_path.return_value = self.templates_dir
         renderer = ProjectRenderer(self.choices)
         
         # Mock output directory
@@ -80,10 +57,8 @@ class TestProjectRenderer:
         assert output_dir.exists()
         assert output_dir.is_dir()
     
-    @patch('generator.renderer.Path')
-    def test_copy_common_files(self, mock_path):
+    def test_copy_common_files(self):
         """Test copying common files"""
-        mock_path.return_value = self.templates_dir
         renderer = ProjectRenderer(self.choices)
         
         # Mock output directory
@@ -101,10 +76,8 @@ class TestProjectRenderer:
         makefile = output_dir / "Makefile"
         assert makefile.exists()
     
-    @patch('generator.renderer.Path')
-    def test_copy_framework_files(self, mock_path):
+    def test_copy_framework_files(self):
         """Test copying framework-specific files"""
-        mock_path.return_value = self.templates_dir
         renderer = ProjectRenderer(self.choices)
         
         # Mock output directory
@@ -119,10 +92,8 @@ class TestProjectRenderer:
         copied_file = output_dir / "src" / "models" / "model.py.j2"
         assert copied_file.exists()
     
-    @patch('generator.renderer.Path')
-    def test_render_templates(self, mock_path):
+    def test_render_templates(self):
         """Test template rendering"""
-        mock_path.return_value = self.templates_dir
         renderer = ProjectRenderer(self.choices)
         
         # Mock output directory
@@ -145,10 +116,8 @@ class TestProjectRenderer:
         assert "Test Author" in content
         assert "{{ project_name }}" not in content  # Template variable should be replaced
     
-    @patch('generator.renderer.Path')
-    def test_create_additional_directories(self, mock_path):
+    def test_create_additional_directories(self):
         """Test creation of additional directories"""
-        mock_path.return_value = self.templates_dir
         renderer = ProjectRenderer(self.choices)
         
         # Mock output directory
@@ -166,10 +135,8 @@ class TestProjectRenderer:
         assert (output_dir / "scripts").exists()
         assert (output_dir / "configs").exists()
     
-    @patch('generator.renderer.Path')
-    def test_generate_project_complete(self, mock_path):
+    def test_generate_project_complete(self):
         """Test complete project generation"""
-        mock_path.return_value = self.templates_dir
         renderer = ProjectRenderer(self.choices)
         
         # Mock output directory
@@ -201,10 +168,8 @@ class TestProjectRenderer:
         assert context["python_version"] == "3.10"
         assert context["year"] == "2026"
     
-    @patch('generator.renderer.Path')
-    def test_copy_directory(self, mock_path):
+    def test_copy_directory(self):
         """Test directory copying functionality"""
-        mock_path.return_value = self.templates_dir
         renderer = ProjectRenderer(self.choices)
         
         # Create source directory with files
