@@ -134,7 +134,7 @@ def init():
 @app.command()
 def version():
     """Show version information"""
-    console.print("mlops-project-generator v1.0.0")
+    console.print("mlops-project-generator v1.0.2")
 
 
 if __name__ == "__main__":

@@ -86,7 +86,7 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
-        packages_dir: dist/
+        packages-dir: dist/
 
     - name: Create GitHub Release
       if: github.event_name == 'workflow_dispatch'
