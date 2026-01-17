@@ -24,10 +24,11 @@ class TestCLI:
         assert result.exit_code == 0
         assert "mlops-project-generator v1.0.0" in result.stdout
     
+    @patch('generator.utils.get_next_steps')
     @patch('generator.prompts.get_user_choices')
     @patch('generator.renderer.ProjectRenderer')
     @patch('generator.validators.validate_choices')
-    def test_init_command_success(self, mock_validate, mock_renderer, mock_choices):
+    def test_init_command_success(self, mock_validate, mock_renderer, mock_choices, mock_next_steps):
         """Test successful init command"""
         # Mock user choices
         mock_choices.return_value = {
@@ -42,16 +43,30 @@ class TestCLI:
             "description": "Test project description"
         }
         
+        # Mock next steps
+        mock_next_steps.return_value = ["Step 1", "Step 2", "Step 3"]
+        
         # Mock renderer
         mock_renderer_instance = MagicMock()
+        mock_renderer_instance.generate_project.return_value = None
         mock_renderer.return_value = mock_renderer_instance
         
         result = self.runner.invoke(app, ["init"])
         
+        # Print debug information
+        print(f"Exit code: {result.exit_code}")
+        print(f"Output: {result.output}")
+        if result.exception:
+            print(f"Exception: {result.exception}")
+            import traceback
+            traceback.print_exception(type(result.exception), result.exception, result.exception.__traceback__)
+        
         assert result.exit_code == 0
         mock_choices.assert_called_once()
         mock_validate.assert_called_once()
+        mock_renderer.assert_called_once()
         mock_renderer_instance.generate_project.assert_called_once()
+        mock_next_steps.assert_called_once()
     
     @patch('generator.prompts.get_user_choices')
     def test_init_command_validation_error(self, mock_choices):
