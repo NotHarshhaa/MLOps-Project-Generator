@@ -26,7 +26,8 @@ class TestCLI:
     
     @patch('generator.prompts.get_user_choices')
     @patch('generator.renderer.ProjectRenderer')
-    def test_init_command_success(self, mock_renderer, mock_choices):
+    @patch('generator.validators.validate_choices')
+    def test_init_command_success(self, mock_validate, mock_renderer, mock_choices):
         """Test successful init command"""
         # Mock user choices
         mock_choices.return_value = {
@@ -49,6 +50,7 @@ class TestCLI:
         
         assert result.exit_code == 0
         mock_choices.assert_called_once()
+        mock_validate.assert_called_once()
         mock_renderer_instance.generate_project.assert_called_once()
     
     @patch('generator.prompts.get_user_choices')
