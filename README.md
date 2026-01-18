@@ -21,8 +21,26 @@ Data → Train → Track → Orchestrate → Deploy → Monitor → Improve
 - **🚀 Deployment**: FastAPI, Docker, Kubernetes
 - **📈 Monitoring**: Evidently AI, Custom solutions
 - **🛠️ Production-Ready**: CI/CD, monitoring, best practices by default
+- **🤖 CI/CD Automation**: Non-interactive mode for DevOps pipelines
 
-## 🌟 NEW: Advanced Features
+## 🌟 NEW: v1.0.5 Advanced Features
+
+### 🚀 **Non-Interactive CLI Mode (CI/CD Ready)**
+- **One-liner project generation** with command-line flags
+- **Perfect for automation** and CI/CD pipelines
+- **Enterprise-ready** with clean, log-friendly output
+- **Zero prompts** when flags are provided
+- **Smart defaults** for unspecified options
+
+```bash
+# Generate a complete project in one command
+mlops-project-generator init \
+  --framework pytorch \
+  --tracking mlflow \
+  --deployment docker \
+  --monitoring evidently \
+  --project-name my-ml-project
+```
 
 ### 🔍 **Smart System Validation**
 - **Automatic system check** for Python, Git, Docker, Conda
@@ -100,10 +118,80 @@ pip install -e ".[dev]"
 
 ## 🎯 Quick Start
 
-### Generate a New Project
-
+### 🚀 **Option 1: Interactive Mode (Recommended for beginners)**
 ```bash
 mlops-project-generator init
+```
+
+### 🤖 **Option 2: Non-Interactive Mode (Perfect for CI/CD)**
+```bash
+# Quick start with defaults
+mlops-project-generator init --framework sklearn --project-name my-project
+
+# Full configuration
+mlops-project-generator init \
+  --framework pytorch \
+  --task-type classification \
+  --tracking mlflow \
+  --orchestration airflow \
+  --deployment docker \
+  --monitoring evidently \
+  --project-name enterprise-ml \
+  --author-name "ML Team" \
+  --description "Production ML pipeline"
+```
+
+### 📋 **Available CLI Flags**
+| Flag | Short | Description | Options |
+|------|-------|-------------|---------|
+| `--framework` | `-f` | ML framework | `sklearn`, `pytorch`, `tensorflow` |
+| `--task-type` | `-t` | Task type | `classification`, `regression`, `time-series`, `nlp`, `computer-vision` |
+| `--tracking` | `-r` | Experiment tracking | `mlflow`, `wandb`, `custom`, `none` |
+| `--orchestration` | `-o` | Orchestration | `airflow`, `kubeflow`, `none` |
+| `--deployment` | `-d` | Deployment | `fastapi`, `docker`, `kubernetes` |
+| `--monitoring` | `-m` | Monitoring | `evidently`, `custom`, `none` |
+| `--project-name` | `-p` | Project name | Any valid name |
+| `--author-name` | `-a` | Author name | Any string |
+| `--description` | `--desc` | Project description | Any string |
+
+### 🎯 **Use Case Examples**
+
+#### **🔬 Data Science Quick Start**
+```bash
+mlops-project-generator init \
+  --framework sklearn \
+  --task-type classification \
+  --tracking mlflow \
+  --project-name fraud-detection
+```
+
+#### **🚀 Deep Learning Production**
+```bash
+mlops-project-generator init \
+  --framework pytorch \
+  --deployment docker \
+  --monitoring evidently \
+  --project-name image-classifier
+```
+
+#### **🏢 Enterprise MLOps**
+```bash
+mlops-project-generator init \
+  --framework tensorflow \
+  --orchestration kubeflow \
+  --deployment kubernetes \
+  --tracking mlflow \
+  --project-name enterprise-ml
+```
+
+#### **⚡ CI/CD Pipeline Integration**
+```bash
+# In GitHub Actions, GitLab CI, or Jenkins
+mlops-project-generator init \
+  --framework $FRAMEWORK \
+  --deployment $DEPLOYMENT \
+  --project-name $PROJECT_NAME \
+  --author-name "CI/CD Pipeline"
 ```
 
 This will launch an **enhanced interactive CLI** that guides you through:
@@ -358,6 +446,127 @@ deployment:
   port: 8000
 ```
 
+## 🚀 CI/CD Integration
+
+### GitHub Actions Example
+```yaml
+name: Generate ML Project
+on:
+  workflow_dispatch:
+    inputs:
+      framework:
+        type: choice
+        options: [sklearn, pytorch, tensorflow]
+        default: sklearn
+      project_name:
+        type: string
+        default: ml-project
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install MLOps Generator
+        run: pip install mlops-project-generator
+      
+      - name: Generate ML Project
+        run: |
+          mlops-project-generator init \
+            --framework ${{ github.event.inputs.framework }} \
+            --project-name ${{ github.event.inputs.project_name }} \
+            --tracking mlflow \
+            --deployment docker
+      
+      - name: Upload generated project
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.project_name }}
+          path: ${{ github.event.inputs.project_name }}/
+```
+
+### GitLab CI Example
+```yaml
+stages:
+  - generate
+
+generate_ml_project:
+  stage: generate
+  image: python:3.11
+  script:
+    - pip install mlops-project-generator
+    - mlops-project-generator init \
+        --framework $FRAMEWORK \
+        --project-name $PROJECT_NAME \
+        --tracking mlflow \
+        --deployment docker
+  artifacts:
+    paths:
+      - $PROJECT_NAME/
+    expire_in: 1 week
+```
+
+### Jenkins Pipeline Example
+```groovy
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'FRAMEWORK', choices: ['sklearn', 'pytorch', 'tensorflow'], description: 'ML Framework')
+        string(name: 'PROJECT_NAME', defaultValue: 'ml-project', description: 'Project Name')
+    }
+    
+    stages {
+        stage('Generate ML Project') {
+            steps {
+                sh 'pip install mlops-project-generator'
+                sh """
+                    mlops-project-generator init \
+                        --framework ${params.FRAMEWORK} \
+                        --project-name ${params.PROJECT_NAME} \
+                        --tracking mlflow \
+                        --deployment docker
+                """
+                archiveArtifacts artifacts: "${params.PROJECT_NAME}/**/*", fingerprint: true
+            }
+        }
+    }
+}
+```
+
+### Docker Integration
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+RUN pip install mlops-project-generator
+
+# Copy project generation script
+COPY generate-project.sh .
+RUN chmod +x generate-project.sh
+
+# Generate project on container start
+CMD ["./generate-project.sh"]
+```
+
+### Environment Variables Support
+```bash
+# Using environment variables in CI/CD
+export FRAMEWORK=pytorch
+export DEPLOYMENT=kubernetes
+export PROJECT_NAME=prod-ml
+
+mlops-project-generator init \
+  --framework $FRAMEWORK \
+  --deployment $DEPLOYMENT \
+  --project-name $PROJECT_NAME \
+  --author-name "CI/CD Pipeline"
+```
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
@@ -388,7 +597,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 🐛 Issues: [GitHub Issues](https://github.com/NotHarshhaa/MLOps-Project-Generator/issues)
 - 💬 Discussions: [GitHub Discussions](https://github.com/NotHarshhaa/MLOps-Project-Generator/discussions)
 
-## 🔮 Roadmap
+## � Roadmap
 
 - [ ] **v1.1**: Additional frameworks (XGBoost, LightGBM)
 - [ ] **v1.2**: Cloud deployment templates (AWS, GCP, Azure)

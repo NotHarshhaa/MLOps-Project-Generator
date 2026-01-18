@@ -2,6 +2,8 @@
 Tests for CLI functionality
 """
 
+import os
+import tempfile
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -23,7 +25,81 @@ class TestCLI:
         """Test version command"""
         result = self.runner.invoke(app, ["version"])
         assert result.exit_code == 0
-        assert "mlops-project-generator v1.0.2" in result.stdout
+        assert "mlops-project-generator v1.0.5" in result.stdout
+
+    def test_non_interactive_mode_with_all_flags(self):
+        """Test non-interactive mode with all CLI flags"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            os.chdir(temp_dir)
+            
+            result = self.runner.invoke(app, [
+                "init",
+                "--framework", "pytorch",
+                "--task-type", "classification",
+                "--tracking", "mlflow",
+                "--orchestration", "airflow",
+                "--deployment", "docker",
+                "--monitoring", "evidently",
+                "--project-name", "test-project",
+                "--author-name", "Test Author",
+                "--description", "Test project description"
+            ])
+            
+            assert result.exit_code == 0
+            assert "Generating test-project with pytorch" in result.stdout
+            assert "Project 'test-project' generated successfully!" in result.stdout
+            
+            # Check if project was created
+            assert os.path.exists("test-project")
+            assert os.path.exists(os.path.join("test-project", "src"))
+
+    def test_non_interactive_mode_partial_flags(self):
+        """Test non-interactive mode with partial flags (should use defaults)"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            os.chdir(temp_dir)
+            
+            result = self.runner.invoke(app, [
+                "init",
+                "--framework", "sklearn",
+                "--project-name", "minimal-project"
+            ])
+            
+            assert result.exit_code == 0
+            assert "Generating minimal-project with sklearn" in result.stdout
+            assert "Project 'minimal-project' generated successfully!" in result.stdout
+            
+            # Check if project was created with defaults
+            assert os.path.exists("minimal-project")
+
+    def test_non_interactive_mode_ci_friendly_output(self):
+        """Test that non-interactive mode produces CI-friendly output"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            os.chdir(temp_dir)
+            
+            result = self.runner.invoke(app, [
+                "init",
+                "--framework", "tensorflow",
+                "--deployment", "kubernetes",
+                "--project-name", "ci-project"
+            ])
+            
+            assert result.exit_code == 0
+            # Should not show interactive banners
+            assert "🧠 MLOps Project Generator" not in result.stdout
+            assert "Created by H A R S H H A A" not in result.stdout
+            # Should show minimal CI-friendly output
+            assert "🚀 Generating ci-project with tensorflow" in result.stdout
+            assert "✅ Project 'ci-project' generated successfully!" in result.stdout
+
+    def test_interactive_mode_no_flags(self):
+        """Test that interactive mode still works when no flags are provided"""
+        # This test would require mocking the interactive prompts
+        # For now, just verify that the command exists
+        result = self.runner.invoke(app, ["init", "--help"])
+        assert result.exit_code == 0
+        assert "--framework" in result.stdout
+        assert "--task-type" in result.stdout
+        assert "--tracking" in result.stdout
 
     @patch("generator.cli.get_next_steps")
     @patch("generator.cli.get_user_choices")

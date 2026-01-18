@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mlops-project-generator"
-version = "1.0.2"
+version = "1.0.5"
 description = "A CLI tool that generates production-ready MLOps project templates for Scikit-learn, PyTorch, and TensorFlow"
 readme = "README.md"
 license = {text = "MIT"}
