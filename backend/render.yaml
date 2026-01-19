@@ -2,9 +2,6 @@ services:
   - type: web
     name: mlops-generator-backend
     runtime: python
-    buildCommand: poetry install --no-dev
-    startCommand: python api.py
-    envVars:
-      - key: PORT
-        value: 8000
+    buildCommand: poetry install --no-root --no-dev
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/options
