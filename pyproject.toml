@@ -1,15 +1,19 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[project]
 name = "mlops-project-generator"
 version = "1.0.6"
 description = "A CLI tool that generates production-ready MLOps project templates for Scikit-learn, PyTorch, and TensorFlow"
 readme = "README.md"
-license = "MIT"
-authors = ["HARSHHAA <contact@example.com>"]
-maintainers = ["HARSHHAA <contact@example.com>"]
+license = {text = "MIT"}
+authors = [
+    {name = "HARSHHAA", email = "contact@example.com"}
+]
+maintainers = [
+    {name = "HARSHHAA", email = "contact@example.com"}
+]
 keywords = ["mlops", "machine-learning", "project-generator", "cli", "template", "scikit-learn", "pytorch", "tensorflow"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -17,39 +21,44 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Code Generators",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Systems Administration",
 ]
+requires-python = ">=3.8"
+dependencies = [
+    "typer[all]>=0.9.0",
+    "rich>=13.0.0",
+    "jinja2>=3.0.0",
+    "pydantic>=2.0.0",
+    "click>=8.0.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-typer = {extras = ["all"], version = ">=0.9.0"}
-rich = ">=13.0.0"
-jinja2 = ">=3.0.0"
-pydantic = ">=2.0.0"
-click = ">=8.0.0"
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = ">=7.0.0"
-pytest-cov = ">=4.0.0"
-black = ">=23.0.0"
-isort = ">=5.12.0"
-flake8 = ">=6.0.0"
-mypy = ">=1.0.0"
-pre-commit = ">=3.0.0"
-
-[tool.poetry.scripts]
-mlops-project-generator = "generator.cli:app"
-
-[tool.poetry.urls]
+[project.urls]
 Homepage = "https://github.com/NotHarshhaa/MLOps-Project-Generator"
 Documentation = "https://github.com/NotHarshhaa/MLOps-Project-Generator#readme"
 Repository = "https://github.com/NotHarshhaa/MLOps-Project-Generator.git"
 "Bug Tracker" = "https://github.com/NotHarshhaa/MLOps-Project-Generator/issues"
+
+[project.scripts]
+mlops-project-generator = "generator.cli:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
