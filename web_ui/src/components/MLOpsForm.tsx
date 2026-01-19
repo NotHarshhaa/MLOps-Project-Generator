@@ -6,8 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import axios from "axios"
 
-// API URL - uses localhost for development, relative path for production
-const API_URL = process.env.NEXT_PUBLIC_API_URL || ""
+// Use internal API routes
+const API_URL = ""
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -142,7 +142,7 @@ export default function MLOpsForm() {
 
   const handleDownload = () => {
     if (downloadUrl && taskId) {
-      window.open(`${API_URL}${downloadUrl}?filename=${taskId}.zip`, "_blank")
+      window.open(downloadUrl, "_blank")
       setShowSuccessDialog(false)
     }
   }
@@ -156,7 +156,7 @@ export default function MLOpsForm() {
     // Refresh options
     const fetchOptions = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/options")
+        const response = await axios.get("/api/options")
         setOptions(response.data)
       } catch (error) {
         toast.error("Failed to refresh options.")
