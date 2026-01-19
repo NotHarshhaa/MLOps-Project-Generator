@@ -2,11 +2,9 @@ services:
   - type: web
     name: mlops-generator-backend
     runtime: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: poetry install --no-dev
     startCommand: python api.py
     envVars:
       - key: PORT
         value: 8000
-      - key: PYTHON_VERSION
-        value: 3.9.0
     healthCheckPath: /api/options
