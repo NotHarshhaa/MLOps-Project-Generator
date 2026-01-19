@@ -150,8 +150,14 @@ async def generate_project_background(task_id: str, choices: Dict[str, Any]):
         project_dir.mkdir(exist_ok=True)
         
         # Generate project using existing renderer
-        renderer = ProjectRenderer(choices)
-        renderer.generate_project(str(project_dir))
+        import os
+        original_cwd = os.getcwd()
+        try:
+            os.chdir(project_dir)
+            renderer = ProjectRenderer(choices)
+            renderer.generate_project()
+        finally:
+            os.chdir(original_cwd)
         
         # Create ZIP file
         zip_path = TEMP_DIR / f"{task_id}.zip"

@@ -64,7 +64,7 @@ export function OptionCards({ options, value, onChange, title, description }: Op
           <p className="text-sm text-gray-600 mt-1">{description}</p>
         )}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
         {options.map((option) => {
           const Icon = getIcon(title, option.value)
           return (
@@ -94,33 +94,33 @@ function OptionCard({ option, Icon, isSelected, onClick }: OptionCardProps) {
     <div
       onClick={onClick}
       className={cn(
-        "relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md group",
+        "relative p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md group",
         isSelected
-          ? "border-blue-500 bg-blue-50 shadow-sm hover:border-red-400 hover:bg-red-50"
+          ? "border-blue-500 bg-blue-50 shadow-sm hover:border-red-400 hover:bg-blue-50"
           : "border-gray-200 bg-white hover:border-gray-300"
       )}
     >
       {isSelected && (
         <div className="absolute top-2 right-2">
           <div className={cn(
-            "w-6 h-6 rounded-full flex items-center justify-center transition-colors",
+            "w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-colors",
             "bg-blue-500 group-hover:bg-red-500"
           )}>
-            <Check className="w-4 h-4 text-white" />
+            <Check className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
         </div>
       )}
       
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         <div className="flex items-center space-x-2">
           <Icon className={cn(
-            "w-5 h-5 transition-colors",
+            "w-4 h-4 sm:w-5 sm:h-5 transition-colors flex-shrink-0",
             isSelected 
               ? "text-blue-600 group-hover:text-red-600" 
               : "text-gray-400 group-hover:text-gray-600"
           )} />
           <h4 className={cn(
-            "font-semibold transition-colors",
+            "text-sm sm:text-base font-semibold transition-colors break-words",
             isSelected 
               ? "text-blue-900 group-hover:text-red-900" 
               : "text-gray-900"
@@ -129,7 +129,7 @@ function OptionCard({ option, Icon, isSelected, onClick }: OptionCardProps) {
           </h4>
         </div>
         <p className={cn(
-          "text-sm leading-relaxed transition-colors",
+          "text-xs sm:text-sm leading-relaxed transition-colors",
           isSelected 
             ? "text-blue-700 group-hover:text-red-700" 
             : "text-gray-600"
