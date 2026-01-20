@@ -18,7 +18,7 @@ import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
-import { Loader2, Download, Rocket, Settings, Info, User, FileText, CheckCircle, X } from "lucide-react"
+import { Loader2, Download, Rocket, Settings, Info, User, FileText, CheckCircle, X, Brain, BarChart, Microscope, GitBranch, Shield, Cpu, Globe, Activity } from "lucide-react"
 
 const formSchema = z.object({
   framework: z.string().optional(),
@@ -79,6 +79,8 @@ export default function MLOpsForm() {
       description: "Generated using MLOps Project Generator - A comprehensive tool for creating production-ready machine learning projects with best practices and modern MLOps workflows."
     }
   })
+
+  const formValues = form.watch()
 
   // Fetch options on component mount
   useEffect(() => {
@@ -482,6 +484,136 @@ export default function MLOpsForm() {
                     Download Project
                   </Button>
                 )}
+
+                {/* Project Summary */}
+                <div className="border-t border-gray-200 dark:border-zinc-800 pt-6 sm:pt-8">
+                  <div className="flex items-center space-x-3 pb-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Project Summary</h3>
+                      <p className="text-sm text-gray-600 dark:text-zinc-400 mt-0.5">Review your selections before generating</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg p-3 sm:p-4 sm:p-6 space-y-3 sm:space-y-4 sm:space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 sm:gap-6">
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <Brain className="w-3 h-3 text-white dark:text-zinc-900" />
+                          </div>
+                          <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">ML Framework</h4>
+                        </div>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                          {formValues.framework || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <BarChart className="w-3 h-3 text-white dark:text-zinc-900" />
+                          </div>
+                          <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Task Type</h4>
+                        </div>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                          {formValues.task_type || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <Microscope className="w-3 h-3 text-white dark:text-zinc-900" />
+                          </div>
+                          <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Experiment Tracking</h4>
+                        </div>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                          {formValues.experiment_tracking || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <GitBranch className="w-3 h-3 text-white dark:text-zinc-900" />
+                          </div>
+                          <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Orchestration</h4>
+                        </div>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                          {formValues.orchestration || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <Rocket className="w-3 h-3 text-white dark:text-zinc-900" />
+                          </div>
+                          <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Deployment</h4>
+                        </div>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                          {formValues.deployment || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <Shield className="w-3 h-3 text-white dark:text-zinc-900" />
+                          </div>
+                          <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Monitoring</h4>
+                        </div>
+                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                          {formValues.monitoring || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {(formValues.project_name || formValues.author_name || formValues.description) && (
+                      <div className="border-t border-gray-300 dark:border-zinc-600 pt-4 sm:pt-6">
+                        <div className="flex items-center space-x-2 mb-3 sm:mb-4">
+                          <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-3 h-3 text-white dark:text-zinc-900" />
+                          </div>
+                          <h4 className="text-base font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Project Details</h4>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-zinc-600 space-y-2 sm:space-y-3">
+                          {formValues.project_name && (
+                            <div className="flex items-start space-x-3">
+                              <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center mt-1 flex-shrink-0">
+                                <Info className="w-2 h-2 text-white dark:text-zinc-900" />
+                              </div>
+                              <div>
+                                <span className="text-xs font-bold text-gray-600 dark:text-zinc-400 uppercase tracking-wide">Project Name:</span>
+                                <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">{formValues.project_name}</p>
+                              </div>
+                            </div>
+                          )}
+                          {formValues.author_name && (
+                            <div className="flex items-start space-x-3">
+                              <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center mt-1 flex-shrink-0">
+                                <User className="w-2 h-2 text-white dark:text-zinc-900" />
+                              </div>
+                              <div>
+                                <span className="text-xs font-bold text-gray-600 dark:text-zinc-400 uppercase tracking-wide">Author:</span>
+                                <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">{formValues.author_name}</p>
+                              </div>
+                            </div>
+                          )}
+                          {formValues.description && (
+                            <div className="flex items-start space-x-3">
+                              <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center mt-1 flex-shrink-0">
+                                <FileText className="w-2 h-2 text-white dark:text-zinc-900" />
+                              </div>
+                              <div>
+                                <span className="text-xs font-bold text-gray-600 dark:text-zinc-400 uppercase tracking-wide">Description:</span>
+                                <p className="text-base font-semibold text-gray-900 dark:text-white mt-1 leading-relaxed">{formValues.description}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Generate Button */}
                 <Button 
