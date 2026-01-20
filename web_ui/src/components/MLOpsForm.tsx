@@ -65,9 +65,11 @@ export default function MLOpsForm() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
+  
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    // resolver: zodResolver(formSchema), // Temporarily disabled for testing
     defaultValues: {
       framework: "",
       task_type: "",
@@ -102,7 +104,13 @@ export default function MLOpsForm() {
       const task = response.data
       
       if (task.status === "processing") {
-        setProgress(50)
+        // Gradual progress updates during processing
+        setProgress(prev => {
+          if (prev < 40) return 40
+          if (prev < 60) return 60
+          if (prev < 80) return 80
+          return prev + 5
+        })
         setTimeout(() => checkTaskStatus(taskId), 2000)
       } else if (task.status === "completed") {
         setProgress(100)
@@ -123,15 +131,98 @@ export default function MLOpsForm() {
   }
 
   const onSubmit = async (values: FormValues) => {
-    setIsGenerating(true)
-    setProgress(10)
-    
     try {
+      
+      // Check for missing required options
+      const missingOptions = []
+    
+    if (!values.framework) missingOptions.push({ field: 'framework', name: 'ML Framework', icon: '🤖' })
+      if (!values.task_type) missingOptions.push({ field: 'task_type', name: 'Task Type', icon: '🎯' })
+      if (!values.experiment_tracking) missingOptions.push({ field: 'experiment_tracking', name: 'Experiment Tracking', icon: '📊' })
+      if (!values.orchestration) missingOptions.push({ field: 'orchestration', name: 'Orchestration', icon: '⚙️' })
+      if (!values.deployment) missingOptions.push({ field: 'deployment', name: 'Deployment', icon: '🚀' })
+      if (!values.monitoring) missingOptions.push({ field: 'monitoring', name: 'Monitoring', icon: '📈' })
+      
+      // Check for missing project details
+      const missingDetails = []
+      if (!values.project_name?.trim()) missingDetails.push({ field: 'project_name', name: 'Project Name', icon: '📝' })
+      if (!values.author_name?.trim()) missingDetails.push({ field: 'author_name', name: 'Author Name', icon: '👤' })
+      if (!values.description?.trim()) missingDetails.push({ field: 'description', name: 'Project Description', icon: '📄' })
+      
+      const allMissing = [...missingOptions, ...missingDetails]
+      
+      if (allMissing.length > 0) {
+        // Set validation error message with all missing fields
+        const missingFieldNames = allMissing.map(field => field.name).join(', ')
+        const errorMessage = `⚠️ Please select all required options before generating!\n\nMissing: ${missingFieldNames}`
+        setValidationError(errorMessage)
+        
+        // Auto-clear validation error after 8 seconds
+        setTimeout(() => {
+          setValidationError(null)
+        }, 8000)
+        
+        // Highlight all missing fields and scroll to the first one
+        setTimeout(() => {
+          const firstMissing = allMissing[0]
+          
+          // Highlight all missing fields with enhanced effects
+          allMissing.forEach(missingField => {
+            const element = document.querySelector(`[data-field="${missingField.field}"]`)
+            if (element) {
+              element.classList.add(
+                'bg-gradient-to-r', 'from-red-50', 'to-orange-50', 
+                'dark:from-red-900/30', 'dark:to-orange-900/30',
+                'border-2', 'border-red-300', 'dark:border-red-600',
+                'shadow-lg', 'shadow-red-200', 'dark:shadow-red-900/30',
+                'transform', 'scale-[1.02]',
+                'transition-all', 'duration-300'
+              )
+            }
+          })
+          
+          // Scroll to the first missing field
+          const firstElement = document.querySelector(`[data-field="${firstMissing.field}"]`)
+          if (firstElement) {
+            firstElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+          
+          // Remove highlights after 5 seconds
+          setTimeout(() => {
+            allMissing.forEach(missingField => {
+              const element = document.querySelector(`[data-field="${missingField.field}"]`)
+              if (element) {
+                element.classList.remove(
+                  'bg-gradient-to-r', 'from-red-50', 'to-orange-50', 
+                  'dark:from-red-900/30', 'dark:to-orange-900/30',
+                  'border-2', 'border-red-300', 'dark:border-red-600',
+                  'shadow-lg', 'shadow-red-200', 'dark:shadow-red-900/30',
+                  'transform', 'scale-[1.02]',
+                  'transition-all', 'duration-300'
+                )
+              }
+            })
+          }, 5000)
+        }, 100)
+        
+        return
+      }
+      
+      // Clear any existing validation errors
+      setValidationError(null)
+      
+      setIsGenerating(true)
+      setProgress(5)
+      
+      // Simulate initialization
+      await new Promise(resolve => setTimeout(resolve, 500))
+      setProgress(15)
+      
       const response = await axios.post(`${API_URL}/api/generate`, values)
       const task = response.data
       
       setTaskId(task.task_id)
-      setProgress(25)
+      setProgress(30)
       toast.success("Project generation started!")
       
       // Start polling for status
@@ -151,22 +242,33 @@ export default function MLOpsForm() {
     }
   }
 
-  const resetForm = () => {
+  const resetForm = async () => {
     setShowSuccessDialog(false)
     setDownloadUrl(null)
     setTaskId(null)
     setProgress(0)
+    
+    // Reset form to default values
     form.reset()
-    // Refresh options
-    const fetchOptions = async () => {
-      try {
-        const response = await axios.get("/api/options")
-        setOptions(response.data)
-      } catch (error) {
-        toast.error("Failed to refresh options.")
-      }
+    
+    // Show success toast
+    toast.success("Form reset - Ready for new project!")
+    
+    // Refresh options to get latest data
+    try {
+      const response = await axios.get("/api/options")
+      setOptions(response.data)
+    } catch (error) {
+      toast.error("Failed to refresh options.")
     }
-    fetchOptions()
+    
+    // Auto-focus on first field after a short delay
+    setTimeout(() => {
+      const firstInput = document.querySelector('input[type="text"]') as HTMLInputElement
+      if (firstInput) {
+        firstInput.focus()
+      }
+    }, 100)
   }
 
   const unselectAll = () => {
@@ -240,7 +342,7 @@ export default function MLOpsForm() {
                     control={form.control}
                     name="framework"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem data-field="framework">
                         <OptionCards
                           options={options.framework}
                           value={field.value}
@@ -248,7 +350,6 @@ export default function MLOpsForm() {
                           title="ML Framework"
                           description="Choose the machine learning framework for your project"
                         />
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -261,7 +362,7 @@ export default function MLOpsForm() {
                         control={form.control}
                         name="task_type"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem data-field="task_type">
                             <OptionCards
                               options={options.task_type}
                               value={field.value}
@@ -281,7 +382,7 @@ export default function MLOpsForm() {
                         control={form.control}
                         name="experiment_tracking"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem data-field="experiment_tracking">
                             <OptionCards
                               options={options.experiment_tracking}
                               value={field.value}
@@ -304,7 +405,7 @@ export default function MLOpsForm() {
                         control={form.control}
                         name="orchestration"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem data-field="orchestration">
                             <OptionCards
                               options={options.orchestration}
                               value={field.value}
@@ -324,7 +425,7 @@ export default function MLOpsForm() {
                         control={form.control}
                         name="deployment"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem data-field="deployment">
                             <OptionCards
                               options={options.deployment}
                               value={field.value}
@@ -344,7 +445,7 @@ export default function MLOpsForm() {
                     control={form.control}
                     name="monitoring"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem data-field="monitoring">
                         <OptionCards
                           options={options.monitoring}
                           value={field.value}
@@ -352,7 +453,6 @@ export default function MLOpsForm() {
                           title="Monitoring"
                           description="Select monitoring solution for your ML models"
                         />
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -378,7 +478,7 @@ export default function MLOpsForm() {
                       control={form.control}
                       name="project_name"
                       render={({ field }) => (
-                        <FormItem className="space-y-1 sm:space-y-2">
+                        <FormItem className="space-y-1 sm:space-y-2" data-field="project_name">
                           <FormLabel className="flex items-center space-x-2 sm:space-x-3">
                             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                               <Info className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-zinc-900" />
@@ -413,7 +513,7 @@ export default function MLOpsForm() {
                       control={form.control}
                       name="author_name"
                       render={({ field }) => (
-                        <FormItem className="space-y-1 sm:space-y-2">
+                        <FormItem className="space-y-1 sm:space-y-2" data-field="author_name">
                           <FormLabel className="flex items-center space-x-2 sm:space-x-3">
                             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                               <User className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-zinc-900" />
@@ -440,7 +540,7 @@ export default function MLOpsForm() {
                     control={form.control}
                     name="description"
                     render={({ field }) => (
-                      <FormItem className="space-y-1 sm:space-y-2">
+                      <FormItem className="space-y-1 sm:space-y-2" data-field="description">
                         <FormLabel className="flex items-center space-x-2 sm:space-x-3">
                           <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                             <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-zinc-900" />
@@ -464,107 +564,161 @@ export default function MLOpsForm() {
                   />
                 </div>
 
-                {/* Progress */}
+                {/* Enhanced Progress */}
                 {isGenerating && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Generating project...</span>
-                      <span>{progress}%</span>
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 dark:bg-zinc-900/50 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-zinc-700">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="relative">
+                            <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 text-zinc-900 dark:text-zinc-100 animate-spin" />
+                            <div className="absolute inset-0 h-5 w-5 sm:h-6 sm:w-6 bg-zinc-900 dark:bg-zinc-100 rounded-full animate-ping opacity-20"></div>
+                          </div>
+                          <div>
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-zinc-100">
+                              {progress < 25 && "🚀 Initializing project generation..."}
+                              {progress >= 25 && progress < 50 && "📁 Creating project structure..."}
+                              {progress >= 50 && progress < 75 && "⚙️ Configuring MLOps components..."}
+                              {progress >= 75 && progress < 100 && "🔧 Finalizing setup..."}
+                              {progress === 100 && "✨ Project ready!"}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-zinc-400 mt-1">
+                              Building your production-ready MLOps project
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+                            {progress}%
+                          </span>
+                          <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-pulse"></div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <Progress value={progress} className="w-full h-3 sm:h-4" />
+                          <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-transparent via-zinc-200 dark:via-zinc-700 to-transparent opacity-30 animate-pulse"></div>
+                        </div>
+                        
+                        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                          <div className={`text-center p-2 rounded-lg border transition-all ${
+                            progress >= 0 ? 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-600'
+                          }`}>
+                            <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${
+                              progress >= 0 ? 'bg-green-500 dark:bg-green-400' : 'bg-gray-400 dark:bg-zinc-500'
+                            }`}></div>
+                            <p className="text-xs font-medium text-gray-700 dark:text-zinc-300">Init</p>
+                          </div>
+                          <div className={`text-center p-2 rounded-lg border transition-all ${
+                            progress >= 25 ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-600'
+                          }`}>
+                            <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${
+                              progress >= 25 ? 'bg-blue-500 dark:bg-blue-400' : 'bg-gray-400 dark:bg-zinc-500'
+                            }`}></div>
+                            <p className="text-xs font-medium text-gray-700 dark:text-zinc-300">Build</p>
+                          </div>
+                          <div className={`text-center p-2 rounded-lg border transition-all ${
+                            progress >= 50 ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-600'
+                          }`}>
+                            <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${
+                              progress >= 50 ? 'bg-purple-500 dark:bg-purple-400' : 'bg-gray-400 dark:bg-zinc-500'
+                            }`}></div>
+                            <p className="text-xs font-medium text-gray-700 dark:text-zinc-300">Config</p>
+                          </div>
+                          <div className={`text-center p-2 rounded-lg border transition-all ${
+                            progress >= 75 ? 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-600'
+                          }`}>
+                            <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${
+                              progress >= 75 ? 'bg-orange-500 dark:bg-orange-400' : 'bg-gray-400 dark:bg-zinc-500'
+                            }`}></div>
+                            <p className="text-xs font-medium text-gray-700 dark:text-zinc-300">Final</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <Progress value={progress} className="w-full" />
                   </div>
                 )}
 
-                {/* Download Button */}
-                {downloadUrl && (
-                  <Button 
-                    type="button" 
-                    onClick={handleDownload}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Project
-                  </Button>
-                )}
-
-                {/* Project Summary */}
-                <div className="border-t border-gray-200 dark:border-zinc-800 pt-6 sm:pt-8">
-                  <div className="flex items-center space-x-3 pb-3">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-4 h-4 text-white dark:text-zinc-900" />
+                
+                {/* Project Summary - Only show when options are selected */}
+                {(formValues.framework || formValues.task_type || formValues.experiment_tracking || formValues.orchestration || formValues.deployment || formValues.monitoring || formValues.project_name || formValues.author_name || formValues.description) && (
+                  <div className="border-t border-gray-200 dark:border-zinc-800 pt-6 sm:pt-8">
+                    <div className="flex items-center space-x-3 pb-3">
+                      <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-4 h-4 text-white dark:text-zinc-900" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Project Summary</h3>
+                        <p className="text-sm text-gray-600 dark:text-zinc-400 mt-0.5">Review your selections before generating</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Project Summary</h3>
-                      <p className="text-sm text-gray-600 dark:text-zinc-400 mt-0.5">Review your selections before generating</p>
-                    </div>
-                  </div>
                   
-                  <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg p-3 sm:p-4 sm:p-6 space-y-3 sm:space-y-4 sm:space-y-6">
+                  <div className="bg-white dark:bg-black border border-gray-200 dark:border-zinc-700 rounded-lg p-3 sm:p-4 sm:p-6 space-y-3 sm:space-y-4 sm:space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 sm:gap-6">
-                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
                         <div className="flex items-center space-x-2 mb-2">
                           <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                             <Brain className="w-3 h-3 text-white dark:text-zinc-900" />
                           </div>
                           <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">ML Framework</h4>
                         </div>
-                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                        <p className="text-base font-semibold text-gray-900 dark:text-zinc-100">
                           {formValues.framework || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
                         </p>
                       </div>
-                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
                         <div className="flex items-center space-x-2 mb-2">
                           <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                             <BarChart className="w-3 h-3 text-white dark:text-zinc-900" />
                           </div>
                           <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Task Type</h4>
                         </div>
-                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                        <p className="text-base font-semibold text-gray-900 dark:text-zinc-100">
                           {formValues.task_type || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
                         </p>
                       </div>
-                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
                         <div className="flex items-center space-x-2 mb-2">
                           <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                             <Microscope className="w-3 h-3 text-white dark:text-zinc-900" />
                           </div>
                           <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Experiment Tracking</h4>
                         </div>
-                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                        <p className="text-base font-semibold text-gray-900 dark:text-zinc-100">
                           {formValues.experiment_tracking || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
                         </p>
                       </div>
-                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
                         <div className="flex items-center space-x-2 mb-2">
                           <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                             <GitBranch className="w-3 h-3 text-white dark:text-zinc-900" />
                           </div>
                           <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Orchestration</h4>
                         </div>
-                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                        <p className="text-base font-semibold text-gray-900 dark:text-zinc-100">
                           {formValues.orchestration || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
                         </p>
                       </div>
-                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
                         <div className="flex items-center space-x-2 mb-2">
                           <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                             <Rocket className="w-3 h-3 text-white dark:text-zinc-900" />
                           </div>
                           <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Deployment</h4>
                         </div>
-                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                        <p className="text-base font-semibold text-gray-900 dark:text-zinc-100">
                           {formValues.deployment || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
                         </p>
                       </div>
-                      <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
                         <div className="flex items-center space-x-2 mb-2">
                           <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
                             <Shield className="w-3 h-3 text-white dark:text-zinc-900" />
                           </div>
                           <h4 className="text-xs font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Monitoring</h4>
                         </div>
-                        <p className="text-base font-semibold text-gray-900 dark:text-white">
+                        <p className="text-base font-semibold text-gray-900 dark:text-zinc-100">
                           {formValues.monitoring || <span className="text-gray-400 dark:text-zinc-500 italic">Not selected</span>}
                         </p>
                       </div>
@@ -578,7 +732,7 @@ export default function MLOpsForm() {
                           </div>
                           <h4 className="text-base font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Project Details</h4>
                         </div>
-                        <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-zinc-600 space-y-2 sm:space-y-3">
+                        <div className="bg-white dark:bg-black rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-zinc-700 space-y-2 sm:space-y-3">
                           {formValues.project_name && (
                             <div className="flex items-start space-x-3">
                               <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center mt-1 flex-shrink-0">
@@ -586,7 +740,7 @@ export default function MLOpsForm() {
                               </div>
                               <div>
                                 <span className="text-xs font-bold text-gray-600 dark:text-zinc-400 uppercase tracking-wide">Project Name:</span>
-                                <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">{formValues.project_name}</p>
+                                <p className="text-base font-semibold text-gray-900 dark:text-zinc-100 mt-1">{formValues.project_name}</p>
                               </div>
                             </div>
                           )}
@@ -597,7 +751,7 @@ export default function MLOpsForm() {
                               </div>
                               <div>
                                 <span className="text-xs font-bold text-gray-600 dark:text-zinc-400 uppercase tracking-wide">Author:</span>
-                                <p className="text-base font-semibold text-gray-900 dark:text-white mt-1">{formValues.author_name}</p>
+                                <p className="text-base font-semibold text-gray-900 dark:text-zinc-100 mt-1">{formValues.author_name}</p>
                               </div>
                             </div>
                           )}
@@ -608,7 +762,7 @@ export default function MLOpsForm() {
                               </div>
                               <div>
                                 <span className="text-xs font-bold text-gray-600 dark:text-zinc-400 uppercase tracking-wide">Description:</span>
-                                <p className="text-base font-semibold text-gray-900 dark:text-white mt-1 leading-relaxed">{formValues.description}</p>
+                                <p className="text-base font-semibold text-gray-900 dark:text-zinc-100 leading-relaxed mt-1">{formValues.description}</p>
                               </div>
                             </div>
                           )}
@@ -617,8 +771,10 @@ export default function MLOpsForm() {
                     )}
                   </div>
                 </div>
-
+                  )}
+                
                 {/* Generate Button */}
+                <div className="mt-6">
                 <Button 
                   type="submit" 
                   className="w-full h-12 text-base font-semibold"
@@ -637,10 +793,43 @@ export default function MLOpsForm() {
                     </>
                   )}
                 </Button>
-              </form>
+                </div>
+                </form>
             </Form>
           </CardContent>
         </Card>
+        
+        {/* Validation Error Message - Enhanced UI with Close Button */}
+        {validationError && (
+          <div className="mt-4 p-4 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border border-red-200 dark:border-red-700 rounded-xl shadow-lg shadow-red-100 dark:shadow-red-900/20">
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-3 flex-1">
+                <div className="flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-red-500 dark:bg-red-400 flex items-center justify-center animate-pulse">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-red-800 dark:text-red-200 mb-1">Validation Required</h4>
+                  <p className="text-sm text-red-700 dark:text-red-300 whitespace-pre-line leading-relaxed">
+                    {validationError}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setValidationError(null)}
+                className="flex-shrink-0 ml-4 p-1 rounded-lg hover:bg-red-100 dark:hover:bg-red-800/50 transition-colors group"
+                aria-label="Close validation message"
+              >
+                <svg className="w-5 h-5 text-red-500 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* About Creator */}
         <Card className="shadow-lg w-full overflow-hidden dark:bg-zinc-800/80 mt-6">
@@ -764,39 +953,82 @@ export default function MLOpsForm() {
         </Card>
         
         {/* Success Dialog */}
-        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-          <DialogContent className="sm:max-w-md mx-3 sm:mx-4 max-w-[95vw]">
-            <DialogHeader className="pb-3 sm:pb-4">
-              <DialogTitle className="flex items-center space-x-1 sm:space-x-2 text-base sm:text-lg lg:text-xl">
-                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-600 dark:text-zinc-400 flex-shrink-0" />
-                <span className="text-base sm:text-lg lg:text-xl break-words">Project Generated Successfully!</span>
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-zinc-400">
-                Thank you for using the MLOps Project Generator!
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col space-y-3 sm:space-y-4">
-              <div className="text-center p-2 sm:p-3 lg:p-4 bg-green-50 dark:bg-zinc-900 rounded-lg">
-                <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-green-600 dark:text-zinc-400 mx-auto mb-1 sm:mb-2" />
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-zinc-300 px-1 sm:px-2">
-                  Your MLOps project has been generated with best practices.
-                </p>
+        <Dialog open={showSuccessDialog} onOpenChange={(open) => {
+          if (!open) {
+            // Reset all form fields when dialog is closed
+            form.reset();
+            setShowSuccessDialog(false);
+          } else {
+            setShowSuccessDialog(true);
+          }
+        }}>
+          <DialogContent className="sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto sm:mx-3 sm:mx-4 max-w-[95vw]">
+            <DialogHeader className="pb-2 sm:pb-4 sm:pb-6">
+              <div className="flex items-center space-x-2 sm:space-x-3 mb-1 sm:mb-2">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 sm:w-12 sm:h-12 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 sm:w-6 sm:h-6 text-white dark:text-zinc-900" />
+                </div>
+                <div>
+                  <DialogTitle className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-zinc-100">
+                    Project Generated Successfully!
+                  </DialogTitle>
+                  <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-zinc-400 mt-0.5 sm:mt-1">
+                    Your production-ready MLOps project is ready
+                  </DialogDescription>
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-3">
+            </DialogHeader>
+            <div className="flex flex-col space-y-3 sm:space-y-4 sm:space-y-6">
+              <div className="bg-gray-50 dark:bg-zinc-900/50 rounded-xl p-3 sm:p-4 sm:p-6 border border-gray-200 dark:border-zinc-700">
+                <div className="flex flex-col md:flex-row items-center md:items-start space-y-3 sm:space-y-4 md:space-y-0 md:space-x-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 sm:w-20 sm:w-24 sm:h-24 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                      <Rocket className="w-8 h-8 sm:w-10 sm:w-12 text-zinc-900 dark:text-zinc-100" />
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-lg sm:text-xl sm:text-2xl font-bold text-gray-900 dark:text-zinc-100 mb-1 sm:mb-2">
+                      🎉 Congratulations!
+                    </h3>
+                    <p className="text-sm sm:text-base sm:text-lg text-gray-700 dark:text-zinc-300 leading-relaxed mb-2 sm:mb-4">
+                      Your MLOps project has been generated with best practices, optimized for production deployment and scalability.
+                    </p>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-1 sm:gap-2">
+                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                        Production Ready
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                        Best Practices
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                        Scalable
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                        Cloud Native
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                        CI/CD Ready
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                 <Button 
                   onClick={handleDownload}
-                  className="w-full sm:flex-1 text-xs sm:text-sm"
-                  size="sm"
+                  className="w-full sm:flex-1 text-sm sm:text-base h-11 sm:h-12"
+                  size="lg"
                 >
-                  <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Download Project
                 </Button>
                 <Button 
                   onClick={resetForm}
                   variant="outline"
-                  className="w-full sm:flex-1 text-xs sm:text-sm"
-                  size="sm"
+                  className="w-full sm:flex-1 text-sm sm:text-base h-11 sm:h-12"
+                  size="lg"
                 >
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Generate Another
                 </Button>
               </div>
