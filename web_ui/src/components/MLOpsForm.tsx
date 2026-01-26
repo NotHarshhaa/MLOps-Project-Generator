@@ -107,22 +107,14 @@ export default function MLOpsForm() {
     placeholder: string
   }) => {
     const [isOpen, setIsOpen] = useState(false)
-    const [selectedValue, setSelectedValue] = useState("")
-    const fieldValue = form.getValues(name)
-    
-    useEffect(() => {
-      if (fieldValue) {
-        setSelectedValue(fieldValue)
-      }
-    }, [fieldValue])
+    const fieldValue = form.watch(name)
     
     const handleSelect = (value: string) => {
-      setSelectedValue(value)
       form.setValue(name, value)
       setIsOpen(false)
     }
     
-    const selectedOption = options.find(opt => opt.value === selectedValue)
+    const selectedOption = options.find(opt => opt.value === fieldValue)
     
     return (
       <FormField
@@ -137,7 +129,7 @@ export default function MLOpsForm() {
                   onClick={() => setIsOpen(!isOpen)}
                   className="w-full h-12 sm:h-13 px-4 py-3 bg-white/80 dark:bg-zinc-800/80 border border-gray-200/60 dark:border-zinc-700/60 rounded-xl cursor-pointer transition-all duration-200 hover:bg-white/90 dark:hover:bg-zinc-800/90 hover:border-gray-300/70 dark:hover:border-zinc-600/70 flex items-center justify-between"
                 >
-                  <span className={`text-gray-900 dark:text-zinc-100 ${!selectedValue ? 'text-gray-400 dark:text-zinc-500' : ''}`}>
+                  <span className={`text-gray-900 dark:text-zinc-100 ${!fieldValue ? 'text-gray-400 dark:text-zinc-500' : ''}`}>
                     {selectedOption ? selectedOption.label : placeholder}
                   </span>
                   <div className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
@@ -155,12 +147,20 @@ export default function MLOpsForm() {
                       <div
                         key={option.value}
                         onClick={() => handleSelect(option.value)}
-                        className="px-4 py-3 cursor-pointer transition-colors duration-150 hover:bg-gray-100/60 dark:hover:bg-zinc-800/60 border-b border-gray-100/40 dark:border-zinc-700/40 last:border-b-0"
+                        className={`px-4 py-3 cursor-pointer transition-colors duration-150 border-b border-gray-100/40 dark:border-zinc-700/40 last:border-b-0 ${
+                          fieldValue === option.value 
+                            ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' 
+                            : 'hover:bg-gray-100/60 dark:hover:bg-zinc-800/60 text-gray-700 dark:text-zinc-300'
+                        }`}
                       >
                         <div className="flex flex-col">
-                          <span className="text-gray-900 dark:text-zinc-100 font-medium">{option.label}</span>
+                          <span className={`font-medium ${fieldValue === option.value ? 'text-zinc-900 dark:text-zinc-100' : 'text-gray-900 dark:text-zinc-100'}`}>
+                            {option.label}
+                          </span>
                           {option.description && (
-                            <span className="text-xs text-gray-500 dark:text-zinc-400 mt-1">{option.description}</span>
+                            <span className={`text-xs mt-1 ${fieldValue === option.value ? 'text-zinc-600 dark:text-zinc-400' : 'text-gray-500 dark:text-zinc-400'}`}>
+                              {option.description}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -1218,73 +1218,73 @@ export default function MLOpsForm() {
             setShowSuccessDialog(true);
           }
         }}>
-          <DialogContent className="sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto sm:mx-3 sm:mx-4 max-w-[95vw]">
-            <DialogHeader className="pb-2 sm:pb-4 sm:pb-6">
-              <div className="flex items-center space-x-2 sm:space-x-3 mb-1 sm:mb-2">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 sm:w-12 sm:h-12 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 sm:w-6 sm:h-6 text-white dark:text-zinc-900" />
+          <DialogContent className="sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto sm:mx-3 sm:mx-4 max-w-[95vw] bg-white/90 dark:bg-zinc-900/90 border border-gray-200/60 dark:border-zinc-700/60 shadow-xl shadow-gray-200/40 dark:shadow-zinc-900/40 rounded-2xl">
+            <DialogHeader className="pb-4 sm:pb-6">
+              <div className="flex items-center space-x-3 sm:space-x-4 mb-2 sm:mb-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-2xl bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white dark:text-zinc-900" />
                 </div>
                 <div>
-                  <DialogTitle className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-zinc-100">
+                  <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-zinc-100">
                     Project Generated Successfully!
                   </DialogTitle>
-                  <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-zinc-400 mt-0.5 sm:mt-1">
+                  <DialogDescription className="text-sm text-gray-600 dark:text-zinc-400 mt-1">
                     Your production-ready MLOps project is ready
                   </DialogDescription>
                 </div>
               </div>
             </DialogHeader>
-            <div className="flex flex-col space-y-3 sm:space-y-4 sm:space-y-6">
-              <div className="bg-gray-50 dark:bg-zinc-900/50 rounded-xl p-3 sm:p-4 sm:p-6 border border-gray-200 dark:border-zinc-700">
-                <div className="flex flex-col md:flex-row items-center md:items-start space-y-3 sm:space-y-4 md:space-y-0 md:space-x-6">
+            <div className="flex flex-col space-y-4 sm:space-y-6">
+              <div className="bg-gray-50/80 dark:bg-zinc-900/80 rounded-xl p-4 sm:p-6 border border-gray-200/60 dark:border-zinc-700/60">
+                <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 sm:space-y-6 md:space-y-0 md:space-x-6">
                   <div className="flex-shrink-0">
-                    <div className="w-16 h-16 sm:w-20 sm:w-24 sm:h-24 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                      <Rocket className="w-8 h-8 sm:w-10 sm:w-12 text-zinc-900 dark:text-zinc-100" />
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shadow-lg">
+                      <Rocket className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-zinc-900 dark:text-zinc-100" />
                     </div>
                   </div>
                   <div className="flex-1 text-center md:text-left">
-                    <h3 className="text-lg sm:text-xl sm:text-2xl font-bold text-gray-900 dark:text-zinc-100 mb-1 sm:mb-2">
+                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-zinc-100 mb-2 sm:mb-3">
                       🎉 Congratulations!
                     </h3>
-                    <p className="text-sm sm:text-base sm:text-lg text-gray-700 dark:text-zinc-300 leading-relaxed mb-2 sm:mb-4">
+                    <p className="text-base sm:text-lg text-gray-700 dark:text-zinc-300 leading-relaxed mb-4 sm:mb-6">
                       Your MLOps project has been generated with best practices, optimized for production deployment and scalability.
                     </p>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-1 sm:gap-2">
-                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                    <div className="flex flex-wrap justify-center md:justify-start gap-2 sm:gap-3">
+                      <span className="inline-flex items-center px-3 py-1.5 sm:px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm sm:text-base font-semibold rounded-xl">
                         Production Ready
                       </span>
-                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                      <span className="inline-flex items-center px-3 py-1.5 sm:px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm sm:text-base font-semibold rounded-xl">
                         Best Practices
                       </span>
-                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                      <span className="inline-flex items-center px-3 py-1.5 sm:px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm sm:text-base font-semibold rounded-xl">
                         Scalable
                       </span>
-                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                      <span className="inline-flex items-center px-3 py-1.5 sm:px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm sm:text-base font-semibold rounded-xl">
                         Cloud Native
                       </span>
-                      <span className="inline-flex items-center px-2 py-1 sm:px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold rounded-lg">
+                      <span className="inline-flex items-center px-3 py-1.5 sm:px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm sm:text-base font-semibold rounded-xl">
                         CI/CD Ready
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                 <Button 
                   onClick={handleDownload}
-                  className="w-full sm:flex-1 text-sm sm:text-base h-11 sm:h-12"
+                  className="w-full sm:flex-1 text-sm sm:text-base h-12 sm:h-13 rounded-xl"
                   size="lg"
                 >
-                  <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <Download className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
                   Download Project
                 </Button>
                 <Button 
                   onClick={resetForm}
                   variant="outline"
-                  className="w-full sm:flex-1 text-sm sm:text-base h-11 sm:h-12"
+                  className="w-full sm:flex-1 text-sm sm:text-base h-12 sm:h-13 rounded-xl border-gray-300 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800"
                   size="lg"
                 >
-                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <Settings className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
                   Generate Another
                 </Button>
               </div>
