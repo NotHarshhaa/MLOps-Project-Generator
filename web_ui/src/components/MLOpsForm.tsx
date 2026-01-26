@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import axios from "axios"
 
@@ -18,7 +17,7 @@ import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
-import { Loader2, Download, Rocket, Settings, Info, User, FileText, CheckCircle, X, Brain, BarChart, Microscope, GitBranch, Shield, Cpu, Globe, Activity, Github, Linkedin, Mail } from "lucide-react"
+import { Loader2, Download, Rocket, Settings, Info, User, FileText, CheckCircle, X, Brain, BarChart, Microscope, GitBranch, Shield, Cloud, Database, Palette, TrendingUp } from "lucide-react"
 
 const formSchema = z.object({
   framework: z.string().optional(),
@@ -27,6 +26,11 @@ const formSchema = z.object({
   orchestration: z.string().optional(),
   deployment: z.string().optional(),
   monitoring: z.string().optional(),
+  cloud_provider: z.string().optional(),
+  cloud_service: z.string().optional(),
+  preset_config: z.string().optional(),
+  custom_template: z.string().optional(),
+  enable_analytics: z.boolean().optional(),
   project_name: z.string().min(1, "Project name is required").max(50, "Project name must be 50 characters or less"),
   author_name: z.string().min(1, "Author name is required").max(100, "Author name must be 100 characters or less"),
   description: z.string().min(1, "Description is required")
@@ -55,6 +59,10 @@ interface Options {
   orchestration: Option[]
   deployment: Option[]
   monitoring: Option[]
+  cloud_provider: Option[]
+  cloud_service: Option[]
+  preset_config: Option[]
+  custom_template: Option[]
 }
 
 export default function MLOpsForm() {
@@ -77,6 +85,11 @@ export default function MLOpsForm() {
       orchestration: "",
       deployment: "",
       monitoring: "",
+      cloud_provider: "",
+      cloud_service: "",
+      preset_config: "",
+      custom_template: "",
+      enable_analytics: true,
       project_name: "",
       author_name: "MLOps Project Generator",
       description: "Generated using MLOps Project Generator - A comprehensive tool for creating production-ready machine learning projects with best practices and modern MLOps workflows."
@@ -84,6 +97,16 @@ export default function MLOpsForm() {
   })
 
   const formValues = form.watch()
+
+  // Reset cloud service when cloud provider changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'cloud_provider') {
+        form.setValue('cloud_service', '')
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [form])
 
   // Fetch options on component mount
   useEffect(() => {
@@ -142,6 +165,9 @@ export default function MLOpsForm() {
       if (!values.orchestration) missingOptions.push({ field: 'orchestration', name: 'Orchestration', icon: '⚙️' })
       if (!values.deployment) missingOptions.push({ field: 'deployment', name: 'Deployment', icon: '🚀' })
       if (!values.monitoring) missingOptions.push({ field: 'monitoring', name: 'Monitoring', icon: '📈' })
+      
+      // Note: Cloud provider, cloud service, preset_config, and custom_template are optional
+      // so we don't include them in the required fields validation
       
       // Check for missing project details
       const missingDetails = []
@@ -278,6 +304,11 @@ export default function MLOpsForm() {
     form.setValue("orchestration", "")
     form.setValue("deployment", "")
     form.setValue("monitoring", "")
+    form.setValue("cloud_provider", "")
+    form.setValue("cloud_service", "")
+    form.setValue("preset_config", "")
+    form.setValue("custom_template", "")
+    form.setValue("enable_analytics", true)
     toast.success("All selections cleared")
   }
 
@@ -302,8 +333,28 @@ export default function MLOpsForm() {
             <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100 break-words">MLOps Project Generator</h1>
           </div>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-zinc-400 max-w-2xl mx-auto px-2 sm:px-4">
-            A CLI tool that generates production-ready MLOps project templates for Scikit-learn, PyTorch, and TensorFlow.
+            A comprehensive CLI tool that generates production-ready MLOps project templates with cloud deployment, configuration management, and analytics.
           </p>
+          
+          {/* New Features Badges */}
+          <div className="flex flex-wrap justify-center gap-2 mt-4 px-2 sm:px-4">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              <Cloud className="w-3 h-3 mr-1" />
+              Cloud Deployment
+            </span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+              <Database className="w-3 h-3 mr-1" />
+              Config Presets
+            </span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              Analytics
+            </span>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+              <Palette className="w-3 h-3 mr-1" />
+              Custom Templates
+            </span>
+          </div>
         </div>
 
         {/* Main Form */}
@@ -453,6 +504,196 @@ export default function MLOpsForm() {
                           title="Monitoring"
                           description="Select monitoring solution for your ML models"
                         />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Cloud Deployment Section */}
+                  <div className="border-t border-gray-200 dark:border-zinc-800 pt-4 sm:pt-6 lg:pt-8">
+                    <div className="flex items-center space-x-3 pb-4">
+                      <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <Cloud className="w-4 h-4 text-white dark:text-zinc-900" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 break-words">Cloud Deployment</h3>
+                        <p className="text-sm text-gray-600 dark:text-zinc-400 mt-0.5">Optional: Generate cloud-specific deployment templates</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                    {/* Cloud Provider */}
+                    <div className="w-full">
+                      <FormField
+                        control={form.control}
+                        name="cloud_provider"
+                        render={({ field }) => (
+                          <FormItem data-field="cloud_provider">
+                            <OptionCards
+                              options={[
+                                { value: "", label: "Select Cloud Provider", description: "Choose your cloud provider (optional)" },
+                                { value: "aws", label: "Amazon Web Services", description: "Deploy to AWS with SageMaker, ECS, Lambda" },
+                                { value: "gcp", label: "Google Cloud Platform", description: "Deploy to GCP with Vertex AI, Cloud Run" },
+                                { value: "azure", label: "Microsoft Azure", description: "Deploy to Azure with ML Studio, Functions" }
+                              ]}
+                              value={field.value}
+                              onChange={field.onChange}
+                              title="Cloud Provider"
+                              description="Choose your cloud provider (optional)"
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Cloud Service */}
+                    <div className="w-full">
+                      <FormField
+                        control={form.control}
+                        name="cloud_service"
+                        render={({ field }) => {
+                          const selectedProvider = formValues.cloud_provider
+                          let serviceOptions = [{ value: "", label: "Select Cloud Provider First", description: "Choose a cloud provider above" }]
+                          
+                          if (selectedProvider === "aws") {
+                            serviceOptions = [
+                              { value: "", label: "Select AWS Service", description: "Choose an AWS service" },
+                              { value: "sagemaker", "label": "SageMaker", "description": "AWS managed ML service" },
+                              { value: "ecs", "label": "ECS", "description": "Elastic Container Service" },
+                              { value: "lambda", "label": "Lambda", "description": "Serverless functions" }
+                            ]
+                          } else if (selectedProvider === "gcp") {
+                            serviceOptions = [
+                              { value: "", label: "Select GCP Service", "description": "Choose a GCP service" },
+                              { value: "vertex-ai", "label": "Vertex AI", "description": "GCP unified ML platform" },
+                              { value: "cloud-run", "label": "Cloud Run", "description": "Serverless containers" },
+                              { value: "ai-platform", "label": "AI Platform", "description": "GCP ML training and deployment" }
+                            ]
+                          } else if (selectedProvider === "azure") {
+                            serviceOptions = [
+                              { value: "", label: "Select Azure Service", "description": "Choose an Azure service" },
+                              { value: "ml-studio", "label": "Azure ML Studio", "description": "Azure ML workspace" },
+                              { value: "container-instances", "label": "Container Instances", "description": "Azure container service" },
+                              { value: "functions", "label": "Functions", "description": "Azure serverless functions" }
+                            ]
+                          }
+                          
+                          return (
+                            <FormItem data-field="cloud_service">
+                              <OptionCards
+                                options={serviceOptions}
+                                value={field.value}
+                                onChange={field.onChange}
+                                title="Cloud Service"
+                                description="Choose the specific cloud service"
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Configuration & Templates Section */}
+                  <div className="border-t border-gray-200 dark:border-zinc-800 pt-4 sm:pt-6 lg:pt-8">
+                    <div className="flex items-center space-x-3 pb-4">
+                      <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <Database className="w-4 h-4 text-white dark:text-zinc-900" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 break-words">Configuration & Templates</h3>
+                        <p className="text-sm text-gray-600 dark:text-zinc-400 mt-0.5">Advanced configuration and template options</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                    {/* Preset Configuration */}
+                    <div className="w-full">
+                      <FormField
+                        control={form.control}
+                        name="preset_config"
+                        render={({ field }) => (
+                          <FormItem data-field="preset_config">
+                            <OptionCards
+                              options={[
+                                { value: "", label: "Select Configuration", description: "Use your current selections" },
+                                { value: "quick-start", label: "Quick Start", description: "Basic setup for rapid prototyping" },
+                                { value: "production-ready", label: "Production Ready", description: "Enterprise-grade configuration" },
+                                { value: "research", label: "Research", description: "Optimized for ML research projects" },
+                                { value: "enterprise", label: "Enterprise", description: "Full enterprise MLOps stack" }
+                              ]}
+                              value={field.value}
+                              onChange={field.onChange}
+                              title="Configuration Preset"
+                              description="Use a predefined configuration preset (optional)"
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Custom Template */}
+                    <div className="w-full">
+                      <FormField
+                        control={form.control}
+                        name="custom_template"
+                        render={({ field }) => (
+                          <FormItem data-field="custom_template">
+                            <OptionCards
+                              options={[
+                                { value: "", label: "Select Template", description: "Use the standard framework template" },
+                                { value: "minimal", label: "Minimal", description: "Lightweight template with essentials only" },
+                                { value: "comprehensive", label: "Comprehensive", description: "Full-featured template with all options" },
+                                { value: "microservice", label: "Microservice", "description": "Microservice-oriented template" }
+                              ]}
+                              value={field.value}
+                              onChange={field.onChange}
+                              title="Custom Template"
+                              description="Choose a custom template variant (optional)"
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Analytics Toggle */}
+                  <div className="border-t border-gray-200 dark:border-zinc-800 pt-4 sm:pt-6 lg:pt-8">
+                    <div className="flex items-center space-x-3 pb-4">
+                      <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <TrendingUp className="w-4 h-4 text-white dark:text-zinc-900" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 break-words">Analytics & Insights</h3>
+                        <p className="text-sm text-gray-600 dark:text-zinc-400 mt-0.5">Enable project analytics and usage tracking</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="enable_analytics"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-zinc-700">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base font-semibold">Enable Analytics</FormLabel>
+                          <FormDescription className="text-sm">
+                            Track project generation metrics and get insights about your MLOps projects
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                        </FormControl>
                       </FormItem>
                     )}
                   />
@@ -642,7 +883,7 @@ export default function MLOpsForm() {
 
                 
                 {/* Project Summary - Only show when options are selected */}
-                {(formValues.framework || formValues.task_type || formValues.experiment_tracking || formValues.orchestration || formValues.deployment || formValues.monitoring || formValues.project_name || formValues.author_name || formValues.description) && (
+                {(formValues.framework || formValues.task_type || formValues.experiment_tracking || formValues.orchestration || formValues.deployment || formValues.monitoring || formValues.cloud_provider || formValues.cloud_service || formValues.preset_config || formValues.custom_template || formValues.enable_analytics || formValues.project_name || formValues.author_name || formValues.description) && (
                   <div className="border-t border-gray-200 dark:border-zinc-800 pt-6 sm:pt-8">
                     <div className="flex items-center space-x-3 pb-3">
                       <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
@@ -723,6 +964,85 @@ export default function MLOpsForm() {
                         </p>
                       </div>
                     </div>
+                    
+                    {/* New v1.0.7 Features Summary */}
+                    {(formValues.cloud_provider || formValues.cloud_service || formValues.preset_config || formValues.custom_template || formValues.enable_analytics) && (
+                      <div className="border-t border-gray-300 dark:border-zinc-600 pt-4 sm:pt-6">
+                        <div className="flex items-center space-x-2 mb-3 sm:mb-4">
+                          <div className="w-5 h-5 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <Cloud className="w-3 h-3 text-white dark:text-zinc-900" />
+                          </div>
+                          <h4 className="text-base font-bold text-gray-800 dark:text-zinc-200 uppercase tracking-wide">Advanced Features</h4>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2 sm:gap-3">
+                          {formValues.cloud_provider && (
+                            <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                                  <Cloud className="w-2 h-2 text-white dark:text-zinc-900" />
+                                </div>
+                                <h5 className="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wide">Cloud Provider</h5>
+                              </div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100 capitalize">
+                                {formValues.cloud_provider}
+                              </p>
+                            </div>
+                          )}
+                          {formValues.cloud_service && (
+                            <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                                  <Cloud className="w-2 h-2 text-white dark:text-zinc-900" />
+                                </div>
+                                <h5 className="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wide">Cloud Service</h5>
+                              </div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100 capitalize">
+                                {formValues.cloud_service}
+                              </p>
+                            </div>
+                          )}
+                          {formValues.preset_config && (
+                            <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                                  <Database className="w-2 h-2 text-white dark:text-zinc-900" />
+                                </div>
+                                <h5 className="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wide">Configuration</h5>
+                              </div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100 capitalize">
+                                {formValues.preset_config}
+                              </p>
+                            </div>
+                          )}
+                          {formValues.custom_template && (
+                            <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                                  <Palette className="w-2 h-2 text-white dark:text-zinc-900" />
+                                </div>
+                                <h5 className="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wide">Template</h5>
+                              </div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100 capitalize">
+                                {formValues.custom_template}
+                              </p>
+                            </div>
+                          )}
+                          {formValues.enable_analytics && (
+                            <div className="bg-white dark:bg-black rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-700">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="w-4 h-4 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                                  <TrendingUp className="w-2 h-2 text-white dark:text-zinc-900" />
+                                </div>
+                                <h5 className="text-xs font-bold text-gray-700 dark:text-zinc-300 uppercase tracking-wide">Analytics</h5>
+                              </div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
+                                Enabled
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     
                     {(formValues.project_name || formValues.author_name || formValues.description) && (
                       <div className="border-t border-gray-300 dark:border-zinc-600 pt-4 sm:pt-6">
